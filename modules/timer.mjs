@@ -14,7 +14,7 @@ class pomodoroTimer{
     }
 
     startTimer(minutes){
-        this.currentState = timerState.INSESSION; // Corrected: Updates class property
+        this.currentState = timerState.INSESSION;
         let remainingTime = minutes * 60 * 1000;
 
         const intervalID = setInterval(() => {
@@ -27,7 +27,7 @@ class pomodoroTimer{
             remainingTime -= 1000;
             if(remainingTime < 0){
                 clearInterval(intervalID);
-                this.currentState = timerState.FINISHED; // Corrected: Updates class property
+                this.currentState = timerState.FINISHED;
                 console.log("timerState finished")
                 this.finishedTask();
             }
@@ -35,7 +35,7 @@ class pomodoroTimer{
     }
 
     finishedTask() {
-        if(this.currentState === timerState.FINISHED){ // Corrected: Matches constructor name
+        if(this.currentState === timerState.FINISHED){
             this.set++;
             console.log(this.set)
             console.log("did this fire?")

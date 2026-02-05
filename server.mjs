@@ -18,4 +18,4 @@ app.listen(PORT, () => {
 const session = new pomodoroTimer("Timer", "test", 1);
 
 print("Starting Pomodoro Session");
-session.startTimer(25);
+session.startTimer(0.1);

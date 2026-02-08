@@ -1,6 +1,6 @@
 // A file for helper function not convenient to place elsewhere
 
-function createRoomCode(){
+export function createRoomCode(){
     let RoomCode    = "";
     let characters  = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789"
 
@@ -14,7 +14,7 @@ function createRoomCode(){
     return RoomCode;
 }
 
-function GenerateUserID(){
+export function GenerateUserID(){
     let userID = crypto.randomUUID();
     return userID;
 }

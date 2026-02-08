@@ -15,12 +15,6 @@ function createRoomCode(){
 }
 
 function GenerateUserID(){
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    
-    const randomValues = new Uint8Array;
-    crypto.getRandomValues(randomValues);
-
-    let result = "";
-    //for(let i = 0; i < )
-    const encodedString = btoa
+    let userID = crypto.randomUUID();
+    return userID;
 }

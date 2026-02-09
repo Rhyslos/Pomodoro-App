@@ -1,5 +1,7 @@
 // A file for helper function not convenient to place elsewhere
 
+import { randomBytes } from "node:crypto";
+
 export const print = console.log;
 
 export function createRoomCode(){
@@ -22,5 +24,8 @@ export function createUserID(){
 }
 
 export function createFriendCode(){
-    
+    return randomBytes(Math.ceil(6))
+        .toString('hex')
+        .slice(0, 6)
+        .toUpperCase();
 }

@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 
 export const print = console.log;
 
+// --- Pomodoro ---
 export function createRoomCode(){
     let RoomCode    = "";
     let characters  = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789"
@@ -18,6 +19,7 @@ export function createRoomCode(){
     return RoomCode;
 }
 
+// --- Users ---
 export function createUserID(){
     let userID = crypto.randomUUID();
     return userID;

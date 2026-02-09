@@ -23,9 +23,15 @@ export function createUserID(){
     return userID;
 }
 
-export function createFriendCode(){
-    return randomBytes(Math.ceil(6))
-        .toString('hex')
-        .slice(0, 6)
-        .toUpperCase();
+export function createFriendCode() {
+    const bytes = randomBytes(6);
+    const hex = bytes.toString("hex").toUpperCase();
+
+    const codeSections = {
+        first:  hex.slice(0, 4),    // xxxx
+        second: hex.slice(4, 7),    // xxx
+        third:  hex.slice(7, 11),   // xxxx
+    };
+
+    return `${codeSections.first}-${codeSections.second}-${codeSections.third}`;
 }

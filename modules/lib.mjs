@@ -16,7 +16,11 @@ export function createRoomCode(){
     return RoomCode;
 }
 
-export function GenerateUserID(){
+export function createUserID(){
     let userID = crypto.randomUUID();
     return userID;
+}
+
+export function createFriendCode(){
+    
 }

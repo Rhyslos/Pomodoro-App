@@ -1,8 +1,9 @@
 
 let timerState = {
-    IDLE: "idle",
-    INSESSION: "in_session",
-    FINISHED: "finished",
+    IDLE:       "idle",
+    WORK:       "work",
+    PAUSE:      "pause",
+    FINISHED:   "finished",
 }
 
 class pomodoroTimer{
@@ -38,7 +39,6 @@ class pomodoroTimer{
         if(this.currentState === timerState.FINISHED){
             this.set++;
             console.log(this.set)
-            console.log("did this fire?")
         }
     }
 

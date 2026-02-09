@@ -1,5 +1,7 @@
 // A file for helper function not convenient to place elsewhere
 
+export const print = console.log;
+
 export function createRoomCode(){
     let RoomCode    = "";
     let characters  = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789"

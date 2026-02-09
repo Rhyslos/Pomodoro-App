@@ -4,7 +4,6 @@ import { pomodoroTimer } from './modules/timer.mjs';
 
 const app = express();
 const PORT = 8080;
-const print = console.log;
 
 app.use(express.json());
 app.use(express.static('Public'));

@@ -1,0 +1,17 @@
+{
+  "users": [
+    {
+      "userId": "b6e08b78-db7e-4a64-b06e-78e1931e9fd9",
+      "friendCode": "D530-AE1-D538",
+      "username": "Terminal_Bot",
+      "createdAt": "2026-02-10T18:06:13.961Z"
+    },
+    {
+      "userId": "8818c22b-fe5f-4f51-97a7-fed36ae7f9b5",
+      "friendCode": "344D-5CE-A16A",
+      "username": "Terminal_Bot",
+      "createdAt": "2026-02-10T18:08:46.380Z"
+    }
+  ],
+  "sessions": []
+}

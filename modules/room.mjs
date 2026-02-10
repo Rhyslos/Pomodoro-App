@@ -49,7 +49,7 @@ class Room {
     // Settings Functions
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        this.timer.stop(); 
+        this.timer.stopTimer(); 
         
         this.timer = new pomodoroTimer(
             this.settings.workTime, 
@@ -76,12 +76,12 @@ class Room {
 
     // Timer Pass-Through Functions
     startSession() {
-        this.timer.start();
+        this.timer.startTimer();
         this.logAction(this.host, "STARTED_SESSION");
     }
     
     stopSession() {
-        this.timer.stop();
+        this.timer.stopTimer();
         this.logAction(this.host, "STOPPED_SESSION");
     }
 

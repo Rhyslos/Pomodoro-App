@@ -1,13 +1,13 @@
 import db from '../database/database.mjs'; 
-import { generateSecureUserID, generateFriendCode } from './lib.mjs';
+import { createUserID, createFriendCode } from './lib.mjs';
 
 class UserManager {
     
     async createUser(username) {
-        const userId = generateSecureUserID();
+        const userId = createUserID();
         
         while (true) {
-            const friendCode = generateFriendCode();
+            const friendCode = createFriendCode();
             
             const candidateUser = {
                 userId: userId,

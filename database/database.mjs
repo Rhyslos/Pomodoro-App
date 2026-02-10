@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const DB_PATH = path.resolve('data.json');
+const DB_PATH = path.resolve('database/data.json');
 const HISTORY_PATH = path.resolve('history.json');
 
 class JSONDatabase {

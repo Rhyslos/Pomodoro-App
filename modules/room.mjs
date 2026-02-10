@@ -1,4 +1,4 @@
-import { PomodoroTimer } from './timer.mjs';
+import { pomodoroTimer } from './timer.mjs';
 
 class Room {
     constructor(roomId, hostUser) {
@@ -19,7 +19,7 @@ class Room {
             targetSets: 4
         };
 
-        this.timer = new PomodoroTimer(
+        this.timer = new pomodoroTimer(
             this.settings.workTime, 
             this.settings.breakTime, 
             this.settings.task, 
@@ -51,7 +51,7 @@ class Room {
         this.settings = { ...this.settings, ...newSettings };
         this.timer.stop(); 
         
-        this.timer = new PomodoroTimer(
+        this.timer = new pomodoroTimer(
             this.settings.workTime, 
             this.settings.breakTime, 
             this.settings.task, 

@@ -1,5 +1,5 @@
-import { UserManager } from 'modules/userManager.mjs';
-import { SessionManager } from 'module/sessionManager.mjs';
+import { UserManager } from './modules/userManager.mjs';
+import { SessionManager } from './modules/sessionManager.mjs';
 
 // Initialization Functions
 const userManager = new UserManager();

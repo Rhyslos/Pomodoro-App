@@ -1,5 +1,6 @@
 import { Room } from './room.mjs';
-import db from './database.mjs';
+import db from '../database/database.mjs';
+import { createRoomCode } from './lib.mjs';
 
 class SessionManager {
     constructor() {
@@ -8,7 +9,7 @@ class SessionManager {
 
     // Session Lifecycle Functions
     createSession(hostUser) {
-        const roomId = this.generateRoomId();
+        const roomId = createRoomCode();
         
         const newRoom = new Room(roomId, hostUser);
         this.sessions.set(roomId, newRoom);
@@ -24,17 +25,10 @@ class SessionManager {
         const room = this.sessions.get(roomId);
         if (!room) return;
 
-        // Archive the log
         const historyLog = room.exportHistory();
         await db.saveSessionLog(historyLog);
 
-        // Delete from RAM
         this.sessions.delete(roomId);
-    }
-
-    // Helper Functions
-    generateRoomId() {
-        return 'ROOM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
     }
 }
 

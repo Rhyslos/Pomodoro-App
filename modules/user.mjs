@@ -1,5 +1,5 @@
 import { GenerateUserID } from "./lib.mjs";
-import database from "../database/database.sql"
+import database from "../database/database.mjs"
 
 class user{
     

@@ -3,30 +3,24 @@ import { generateSecureUserID, generateFriendCode } from './utils/ids.mjs';
 
 class UserManager {
     
-    // User Creation Functions
     async createUser(username) {
         const userId = generateSecureUserID();
-        let friendCode = generateFriendCode();
         
-        const newUser = {
-            userId: userId,
-            friendCode: friendCode,
-            username: username,
-            createdAt: new Date().toISOString()
-        };
+        while (true) {
+            const friendCode = generateFriendCode();
+            
+            const candidateUser = {
+                userId: userId,
+                friendCode: friendCode,
+                username: username,
+                createdAt: new Date().toISOString()
+            };
 
-        let success = false;
-        
-        while (!success) {
             try {
-                await db.createUser(newUser);
-                success = true;
-                return newUser;
+                await db.createUser(candidateUser);
+                return candidateUser;
             } catch (error) {
-                if (error.message === "Friend Code Taken") {
-                    friendCode = generateFriendCode();
-                    newUser.friendCode = friendCode;
-                } else {
+                if (error.message !== "Friend Code Taken") {
                     throw error;
                 }
             }

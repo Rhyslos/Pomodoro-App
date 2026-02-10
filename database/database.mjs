@@ -6,44 +6,45 @@ const DB_PATH = path.resolve('data.json');
 class JSONDatabase {
     constructor() {
         this.filePath = DB_PATH;
-        this.init();
+        this.ensureFileExists();
     }
 
     // Initialization Functions
-    async init() {
+    async ensureFileExists() {
         try {
             await fs.access(this.filePath);
         } catch {
-            const initialData = { users: [], sessions: [] };
-            await fs.writeFile(this.filePath, JSON.stringify(initialData, null, 2));
+            await this._saveFile({ users: [], sessions: [] });
         }
     }
 
-    // IO Functions
-    async readData() {
-        const raw = await fs.readFile(this.filePath, 'utf-8');
-        return JSON.parse(raw);
+    // Internal Helper Functions
+    async _readFile() {
+        const rawData = await fs.readFile(this.filePath, 'utf-8');
+        return JSON.parse(rawData);
     }
 
-    async writeData(data) {
-        await fs.writeFile(this.filePath, JSON.stringify(data, null, 2));
+    async _saveFile(data) {
+        const jsonString = JSON.stringify(data, null, 2);
+        await fs.writeFile(this.filePath, jsonString);
     }
 
-    // User Functions
+    // User Data Functions
     async createUser(user) {
-        const data = await this.readData();
+        const data = await this._readFile();
         
-        if (data.users.find(u => u.friendCode === user.friendCode)) {
+        const isTaken = data.users.some(u => u.friendCode === user.friendCode);
+        
+        if (isTaken) {
             throw new Error("Friend Code Taken");
         }
 
         data.users.push(user);
-        await this.writeData(data);
-        return user;
+        await this._saveFile(data);
     }
 
     async getUser(userId) {
-        const data = await this.readData();
+        const data = await this._readFile();
         return data.users.find(u => u.userId === userId);
     }
 }

@@ -1,4 +1,4 @@
-import db from './database.mjs'; 
+import db from '../database/database.mjs'; 
 import { generateSecureUserID, generateFriendCode } from './lib.mjs';
 
 class UserManager {

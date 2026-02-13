@@ -30,7 +30,7 @@ class Room {
     // Logging Functions
     logAction(user, action) {
         this.activityLog.push({
-            user: user.username || user.id, // Log name if available
+            user: user.username || user.id,
             action: action,
             time: new Date().toISOString()
         });

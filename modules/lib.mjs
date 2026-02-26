@@ -1,10 +1,9 @@
-// A file for helper function not convenient to place elsewhere
-
 import { randomBytes } from "node:crypto";
 
+// Export variables
 export const print = console.log;
 
-// --- Pomodoro ---
+// Room generation functions
 export function createRoomCode(){
     let RoomCode    = "";
     let characters  = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789"
@@ -19,7 +18,7 @@ export function createRoomCode(){
     return RoomCode;
 }
 
-// --- Users ---
+// ID generation functions
 export function createUserID(){
     let userID = crypto.randomUUID();
     return userID;
@@ -30,9 +29,9 @@ export function createFriendCode() {
     const hex = bytes.toString("hex").toUpperCase();
 
     const codeSections = {
-        first:  hex.slice(0, 4),    // xxxx
-        second: hex.slice(4, 7),    // xxx
-        third:  hex.slice(7, 11),   // xxxx
+        first:  hex.slice(0, 4),    
+        second: hex.slice(4, 7),    
+        third:  hex.slice(7, 11),   
     };
 
     return `${codeSections.first}-${codeSections.second}-${codeSections.third}`;

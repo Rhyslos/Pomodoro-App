@@ -1,9 +1,11 @@
 import express from 'express';
-import { userManager, sessionManager } from '../public/app.mjs';
+import { userManager } from '../singletons/userManager.mjs';
+import { sessionManager } from '../singletons/sessionManager.mjs';
 
+// Initialization functions
 const router = express.Router();
 
-// User Routes
+// User routes
 router.post('/users', async (req, res) => {
     try {
         const { username } = req.body;
@@ -24,7 +26,7 @@ router.get('/users/:userId', async (req, res) => {
     }
 });
 
-// Session Routes
+// Session routes
 router.post('/sessions', (req, res) => {
     const { hostId } = req.body;
     const room = sessionManager.createSession({ id: hostId, username: "Host" }); 
@@ -53,4 +55,5 @@ router.post('/sessions/:roomId/action', (req, res) => {
     res.json(room.getStatus());
 });
 
+// Export functions
 export default router;

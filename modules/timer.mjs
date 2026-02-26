@@ -1,3 +1,4 @@
+// State variables
 let timerState = {
     IDLE: "idle",
     WORK: "work",
@@ -5,6 +6,7 @@ let timerState = {
     FINISHED: "finished",
 }
 
+// Timer class
 class pomodoroTimer {
     constructor(workTime, breakTime, task, targetSets) {
         this.workTime = workTime;
@@ -19,6 +21,7 @@ class pomodoroTimer {
         this.intervalID = null;
     }
 
+    // Timer action functions
     startTimer() {
         if (this.currentState === timerState.WORK || this.currentState === timerState.BREAK) return;
 
@@ -41,10 +44,6 @@ class pomodoroTimer {
         if (this.intervalID) clearInterval(this.intervalID);
 
         this.intervalID = setInterval(() => {
-            const mins = Math.floor(this.remainingTime / 60000);
-            const secs = Math.floor((this.remainingTime % 60000) / 1000);
-            console.log(`Set ${this.currentSet} / ${this.targetSets} finished.`);
-
             this.remainingTime -= 1000;
 
             if (this.remainingTime < 0) {
@@ -57,26 +56,23 @@ class pomodoroTimer {
     handlePhaseChange() {
         if (this.currentState === timerState.WORK) {
             this.currentSet++;
-            console.log(`Set ${this.currentSet} / ${this.targetSets} finished.`);
 
             if (this.currentSet < this.targetSets) {
-                console.log(`Starting ${this.breakTime} min break...`);
                 this.currentState = timerState.BREAK;
                 this.remainingTime = this.breakTime * 60 * 1000; 
                 this.runInterval(); 
             } else {
                 this.currentState = timerState.FINISHED;
-                console.log("All sets finished!");
             }
         } 
         else if (this.currentState === timerState.BREAK) {
-            console.log("Break over! Back to work.");
             this.currentState = timerState.WORK;
             this.remainingTime = this.workTime * 60 * 1000;
             this.runInterval(); 
         }
     }
 
+    // Data retrieval functions
     getStatus() {
         return {
             state: this.currentState,

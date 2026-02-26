@@ -1,5 +1,5 @@
 import express from 'express';
-import { userManager, sessionManager } from '../app.mjs';
+import { userManager, sessionManager } from '../public/app.mjs';
 
 const router = express.Router();
 

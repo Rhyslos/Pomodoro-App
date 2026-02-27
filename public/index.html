@@ -3,10 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="script.mjs"></script>
+    <title>Pomodoro App</title>
+    <link rel="stylesheet" href="styling.css">
+    <script type="module" src="app.mjs" defer></script>
 </head>
-    <body>
+<body>
+    <header>
+        <div class="settings-container">
+            <button onclick="toggleSettings()" class="icon-btn">⚙️</button>
+            <div id="settings-menu" class="hidden">
+                <ul>
+                    <li><a href="#">Option 1</a></li>
+                    <li><a href="#">Option 2</a></li>
+                    <li><a href="#">Option 3</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
 
-    </body>
+    <div id="app-container"></div>
+
+    <footer>
+        <a href="#" onclick="loadPolicy('privacy')">Privacy Policy</a>
+        <a href="#" onclick="loadPolicy('tos')">Terms of Service</a>
+    </footer>
+</body>
 </html>

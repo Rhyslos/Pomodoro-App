@@ -6,6 +6,7 @@ class Room {
         this.id = roomId;
         this.host = hostUser;
         this.users = new Set([hostUser]); 
+        this.maxUsers = 1;
         
         this.startTime = new Date().toISOString();
 
@@ -41,6 +42,7 @@ class Room {
     join(user) {
         if (this.users.size >= 16) return false;
         this.users.add(user);
+        this.maxUsers = Math.max(this.maxUsers, this.users.size);
         return true;
     }
 
@@ -55,6 +57,19 @@ class Room {
     
     stopSession() {
         this.timer.stopTimer();
+    }
+
+    // Data retrieval functions
+    exportHistory() {
+        const start = new Date(this.startTime);
+        const end = new Date();
+        const durationSeconds = Math.floor((end - start) / 1000);
+
+        return {
+            endTime: end.toISOString(),
+            durationSeconds: durationSeconds,
+            maxParticipants: this.maxUsers
+        };
     }
 
     getStatus() {

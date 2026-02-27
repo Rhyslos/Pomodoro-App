@@ -1,0 +1,18 @@
+<div id="room-screen">
+    <div class="room-header">
+        <h2>Room: <span id="room-code-display"></span></h2>
+        <button onclick="leaveSession()" class="warning-btn" style="margin: 0;">Leave</button>
+    </div>
+    
+    <div class="room-info">
+        <h2>Timer: <span id="timer-display"></span></h2>
+        <h2>Status: <span id="status-display"></span></h2>
+    </div>
+    
+    <div class="button-group">
+        <button onclick="sendTimerAction('start')" class="success-btn">Start</button>
+        <button onclick="sendTimerAction('stop')" class="warning-btn">Stop</button>
+    </div>
+    
+    <button onclick="endSession()" id="delete-btn">End Session For All</button>
+</div>

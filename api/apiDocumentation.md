@@ -1,13 +1,19 @@
-apiDocumentation.md
-Markdown
-# API Documentation
+# Pomodoro App Documentation
+
+## 1. Privacy Policy
+
+---
+
+## 3. API Documentation
 
 Base URL: `http://localhost:8080/api`
 
-## User Endpoints
+This API manages the lifecycle and state of collaborative Pomodoro timer rooms, as well as temporary user profile rendering. 
 
-### Create User
-Creates a new user profile with a unique ID and Friend Code.
+### User Endpoints
+
+#### Create User
+Creates a new temporary user profile with a unique ID and Friend Code.
 
 - **Endpoint:** `POST /users`
 - **Content-Type:** `application/json`
@@ -17,108 +23,154 @@ Creates a new user profile with a unique ID and Friend Code.
 {
   "username": "String"
 }
-Response (201 Created):
+```
 
-JSON
+**Response (201 Created):**
+```json
 {
   "userId": "uuid-string",
   "friendCode": "XXXX-XXX-XXXX",
   "username": "String",
   "createdAt": "ISO-Date-String"
 }
-Get User
-Retrieves details for a specific user.
+```
 
-Endpoint: GET /users/:userId
+#### Get User
+Retrieves details for a specific user to verify active connection.
 
-Response (200 OK):
+- **Endpoint:** `GET /users/:userId`
 
-JSON
+**Response (200 OK):**
+```json
 {
   "userId": "uuid-string",
   "friendCode": "XXXX-XXX-XXXX",
   "username": "String",
   "createdAt": "ISO-Date-String"
 }
-Response (404 Not Found):
+```
 
-JSON
+**Response (404 Not Found):**
+```json
 {
   "error": "User not found"
 }
-Session Endpoints
-Create Session
-Creates a new Pomodoro room hosted by a specific user.
+```
 
-Endpoint: POST /sessions
+#### Delete User
+Deletes the temporary user profile from the active server memory.
 
-Content-Type: application/json
+- **Endpoint:** `DELETE /users/:userId`
 
-Request Body:
+**Response (200 OK):**
+```json
+{
+  "message": "User deleted"
+}
+```
 
-JSON
+---
+
+### Session Endpoints
+
+#### Create a Session
+Scaffolds a new Pomodoro room and initializes the timer state.
+
+- **Endpoint:** `POST /sessions`
+- **Content-Type:** `application/json`
+
+**Request Body:**
+```json
 {
   "hostId": "uuid-string"
 }
-Response (201 Created):
+```
 
-JSON
+**Response (201 Created):**
+```json
 {
   "roomId": "ABC-123"
 }
-Get Session Status
-Retrieves the current state of a room, including timer status, participants, and settings.
+```
 
-Endpoint: GET /sessions/:roomId
+#### Get Session Status
+Retrieves the current real-time state of a room, including timer countdowns, current phase (work/break), and participants.
 
-Response (200 OK):
+- **Endpoint:** `GET /sessions/:roomId`
 
-JSON
+**Response (200 OK):**
+```json
 {
   "id": "ABC-123",
-  "host": { ...userObject },
-  "users": [ ...userObjects ],
+  "host": { 
+    "userId": "uuid-string", 
+    "username": "String" 
+  },
+  "users": [ 
+    { 
+      "userId": "uuid-string", 
+      "username": "String" 
+    } 
+  ],
   "timer": {
-    "state": "idle" | "work" | "break",
-    "remaining": Integer (seconds),
-    "currentSet": Integer,
-    "targetSets": Integer,
-    "task": "String"
+    "state": "idle | work | break | finished",
+    "remaining": 1500,
+    "currentSet": 0,
+    "targetSets": 4,
+    "task": "Study Group"
   },
   "settings": {
     "workTime": 25,
     "breakTime": 5,
-    "task": "String",
+    "task": "Study Group",
     "targetSets": 4
   }
 }
-Session Actions
-Sends a command to control the timer or update room settings.
+```
 
-Endpoint: POST /sessions/:roomId/action
+**Response (404 Not Found):**
+```json
+{
+  "error": "Room not found"
+}
+```
 
-Content-Type: application/json
+#### End a Session
+Terminates an active room, compiles the session history metrics, and removes it from active memory.
 
-Supported Actions: start, stop, settings
+- **Endpoint:** `DELETE /sessions/:roomId`
 
-1. Start Timer
-Request Body:
+**Response (200 OK):**
+```json
+{
+  "message": "Session ended"
+}
+```
 
-JSON
+#### Send Timer Action
+Manipulates the timer state or updates the room settings for all connected clients.
+
+- **Endpoint:** `POST /sessions/:roomId/action`
+- **Content-Type:** `application/json`
+
+**Supported Actions:** `start`, `stop`, `settings`
+
+**1. Start Timer**
+```json
 {
   "action": "start"
 }
-2. Stop/Pause Timer
-Request Body:
+```
 
-JSON
+**2. Stop/Pause Timer**
+```json
 {
   "action": "stop"
 }
-3. Update Settings
-Request Body:
+```
 
-JSON
+**3. Update Settings**
+```json
 {
   "action": "settings",
   "payload": {
@@ -128,4 +180,6 @@ JSON
     "task": "New Task Name"
   }
 }
-Response (200 OK): Returns the updated Session Status object (same structure as GET /sessions/:roomId).
+```
+
+**Response (200 OK):** Returns the updated Session Status object.

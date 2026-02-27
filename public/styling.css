@@ -1,4 +1,270 @@
-/* Utility classes */
+/* Layout styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f9fc;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#app-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+/* Header & Settings styling */
+header {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.settings-container {
+    position: relative;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 5px;
+    margin: 0;
+    transition: transform 0.2s;
+}
+
+.icon-btn:hover {
+    background: transparent;
+    transform: rotate(45deg);
+}
+
+#settings-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+#settings-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#settings-menu li a {
+    display: block;
+    padding: 12px 20px;
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+#settings-menu li a:hover {
+    background-color: #f7f9fc;
+}
+
+/* Navigation styling */
+footer {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+footer a {
+    color: #95a5a6;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: #34495e;
+    text-decoration: underline;
+}
+
+/* Container styling */
+#login-screen, #dashboard-screen, #room-screen, .policy-container {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    width: 100%;
+    max-width: 450px;
+}
+
+.policy-container {
+    max-width: 650px;
+    text-align: left;
+}
+
+/* Element styling */
+h1 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.policy-container h1 {
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin: 0.5rem 0;
+}
+
+.policy-container h2 {
+    color: #2c3e50;
+    margin-top: 1.5rem;
+}
+
+.policy-container p {
+    line-height: 1.6;
+    color: #555;
+}
+
+span {
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    border-color: #3498db;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    margin: 5px;
+    font-weight: 500;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* Specific button styling */
+.success-btn {
+    background-color: #2ecc71;
+}
+
+.success-btn:hover {
+    background-color: #27ae60;
+}
+
+.warning-btn {
+    background-color: #f39c12;
+}
+
+.warning-btn:hover {
+    background-color: #d68910;
+}
+
+#delete-btn {
+    background-color: transparent;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+#delete-btn:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* Group styling */
+.button-group {
+    margin: 1.5rem 0;
+}
+
+.join-group {
+    display: flex;
+    flex-direction: column;
+    margin: 1.5rem 0;
+}
+
+.room-info {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    border: 1px solid #e9ecef;
+}
+
+.room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.divider {
+    margin: 20px 0;
+    text-align: center;
+    position: relative;
+}
+
+.divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #ecf0f1;
+    z-index: 1;
+}
+
+.divider span {
+    background: white;
+    padding: 0 15px;
+    color: #95a5a6;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Utility styling */
 .hidden {
-    display: none;
+    display: none !important;
 }

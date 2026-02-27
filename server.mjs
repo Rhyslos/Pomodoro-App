@@ -1,7 +1,7 @@
 import express from 'express';
 import apiRoutes from './api/routes.mjs';
 
-// Server initialization
+// Server initialization functions
 const app = express();
 const PORT = 8080;
 
@@ -11,7 +11,7 @@ app.use(express.static('public'));
 app.use('/modules', express.static('modules'));
 app.use('/api', apiRoutes);
 
-// Server start functions
+// Server execution functions
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });

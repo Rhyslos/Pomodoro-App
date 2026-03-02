@@ -10,18 +10,40 @@
 <body>
     <header>
         <div class="settings-container">
-            <button onclick="toggleSettings()" class="icon-btn">⚙️</button>
+            <button onclick="toggleSettings()" class="icon-btn">&#9776;</button>
             <div id="settings-menu" class="hidden">
                 <ul>
-                    <li><a href="#">Option 1</a></li>
-                    <li><a href="#">Option 2</a></li>
-                    <li><a href="#">Option 3</a></li>
+                    <li><a href="#" onclick="toggleTheme(); return false;">Toggle Theme</a></li>
+                    <li><a href="#" onclick="changeDisplayName(); return false;">Change Name</a></li>
+                    <li><a href="#" onclick="triggerColorPicker(); return false;">Set Name Color</a></li>
+                    <li class="menu-spacer"></li>
+                    <li><a href="#" onclick="deleteAccount(); return false;" class="danger-text">Delete Account</a></li>
                 </ul>
             </div>
+            <input type="color" id="name-color-picker" class="hidden" onchange="changeDisplayColor(event)">
         </div>
     </header>
 
     <div id="app-container"></div>
+
+    <div id="delete-account-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Delete Account?</h2>
+            <p>Are you sure you want to permanently delete your account?</p>
+            
+            <div class="policy-snippet">
+                <strong>Privacy Policy Notice:</strong><br>
+                Deleting your account will immediately erase your display name and session data from your device and drop your active connections. Anonymous telemetry regarding room interactions remains to maintain room integrity, but cannot be traced back to you.
+            </div>
+            
+            <p style="font-size: 0.9rem; margin-bottom: 0;">You can always come back and create a new account at any time!</p>
+            
+            <div class="modal-actions">
+                <button onclick="closeDeleteModal()" class="warning-btn">Cancel</button>
+                <button onclick="confirmDeleteAccount()" class="danger-btn">Delete</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <a href="#" onclick="loadPolicy('privacy')">Privacy Policy</a>

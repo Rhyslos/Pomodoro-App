@@ -48,6 +48,16 @@ router.get('/users/:userId', async (req, res) => {
     }
 });
 
+router.patch('/users/:userId', async (req, res) => {
+    try {
+        const user = await userManager.updateUser(req.params.userId, req.body);
+        if (!user) return res.status(404).json({ error: "User not found" });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.delete('/users/:userId', async (req, res) => {
     try {
         await userManager.deleteUser(req.params.userId);
@@ -59,12 +69,12 @@ router.delete('/users/:userId', async (req, res) => {
 
 // Session routing functions
 router.post('/sessions', async (req, res) => {
-    const { hostId } = req.body;
+    const { hostId, settings } = req.body;
     const user = await userManager.getUser(hostId);
     
     if (!user) return res.status(404).json({ error: "User not found" });
     
-    const room = await sessionManager.createSession(user); 
+    const room = await sessionManager.createSession(user, settings); 
     res.status(201).json({ roomId: room.id });
 });
 
@@ -87,7 +97,7 @@ router.post('/sessions/:roomId/join', async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const joined = room.join(user);
-    if (!joined) return res.status(400).json({ error: "Room is full" });
+    if (!joined) return res.status(403).json({ error: "Room is locked or full" });
 
     res.json(room.getStatus());
 });
@@ -122,10 +132,56 @@ router.post('/sessions/:roomId/action', (req, res) => {
     if (!room) return res.status(404).json({ error: "Room not found" });
 
     if (action === "start") room.startSession();
+    if (action === "pause") room.pauseSession();
+    if (action === "resume") room.resumeSession();
     if (action === "stop") room.stopSession();
     if (action === "settings") room.updateSettings(payload);
 
     res.json(room.getStatus());
+});
+
+// Task routing functions
+router.post('/sessions/:roomId/tasks', (req, res) => {
+    const room = sessionManager.getSession(req.params.roomId);
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    const task = { 
+        ...req.body, 
+        id: Date.now().toString(), 
+        completed: false,
+        createdAt: new Date().toISOString()
+    };
+    room.addTask(task);
+    res.status(201).json(task);
+});
+
+router.patch('/sessions/:roomId/tasks/:taskId', (req, res) => {
+    const room = sessionManager.getSession(req.params.roomId);
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    room.completeTask(req.params.taskId);
+    res.status(200).json({ message: "Task completed" });
+});
+
+// Admin routing functions
+router.post('/sessions/:roomId/lock', (req, res) => {
+    const { hostId } = req.body;
+    const room = sessionManager.getSession(req.params.roomId);
+    
+    if (!room) return res.status(404).json({ error: "Room not found" });
+    
+    room.toggleLock(hostId);
+    res.status(200).json({ message: "Lock toggled" });
+});
+
+router.post('/sessions/:roomId/admin', (req, res) => {
+    const { hostId, targetId, action } = req.body;
+    const room = sessionManager.getSession(req.params.roomId);
+    
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    room.adminAction(hostId, targetId, action);
+    res.status(200).json({ message: "Admin action executed" });
 });
 
 // Export functions

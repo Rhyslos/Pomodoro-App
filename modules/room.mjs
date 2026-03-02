@@ -1,27 +1,42 @@
 import { pomodoroTimer } from './timer.mjs';
 
-// Room class
+// Room management classes
 class Room {
-    constructor(roomId, hostUser) {
+    constructor(roomId, hostUser, customSettings = {}) {
         this.id = roomId;
         this.host = hostUser;
         this.users = new Set([hostUser]); 
         this.maxUsers = 1;
         
         this.startTime = new Date().toISOString();
+        this.isLocked = false;
+        this.bannedUsers = new Set();
+        this.tasks = [];
+        this.telemetry = {
+            tasksCreated: 0,
+            tasksCompleted: 0
+        };
 
         this.settings = {
             workTime: 25,
             breakTime: 5,
+            longBreakTime: 15,
+            targetSets: 4,
+            autoStart: false,
             task: "Study Group",
-            targetSets: 4
+            roomName: `${hostUser.username}'s Room`,
+            showCode: false,
+            debugMode: false,
+            ...customSettings
         };
 
         this.timer = new pomodoroTimer(
             this.settings.workTime, 
             this.settings.breakTime, 
-            this.settings.task, 
-            this.settings.targetSets
+            this.settings.longBreakTime,
+            this.settings.targetSets,
+            this.settings.autoStart,
+            this.settings.task
         );
     }
 
@@ -33,14 +48,19 @@ class Room {
         this.timer = new pomodoroTimer(
             this.settings.workTime, 
             this.settings.breakTime, 
-            this.settings.task, 
-            this.settings.targetSets
+            this.settings.longBreakTime,
+            this.settings.targetSets,
+            this.settings.autoStart,
+            this.settings.task
         );
     }
 
     // Participant functions
     join(user) {
         if (this.users.size >= 16) return false;
+        if (this.isLocked) return false;
+        if (this.bannedUsers.has(user.userId)) return false;
+
         this.users.add(user);
         this.maxUsers = Math.max(this.maxUsers, this.users.size);
         return true;
@@ -50,9 +70,61 @@ class Room {
         this.users.delete(user);
     }
 
+    // Admin functions
+    toggleLock(userId) {
+        if (this.host.userId === userId) {
+            this.isLocked = !this.isLocked;
+        }
+    }
+
+    adminAction(hostId, targetUserId, action) {
+        if (this.host.userId !== hostId || hostId === targetUserId) return;
+
+        let targetUser = null;
+        for (let user of this.users) {
+            if (user.userId === targetUserId) {
+                targetUser = user;
+                break;
+            }
+        }
+
+        if (!targetUser) return;
+
+        if (action === 'kick') {
+            this.leave(targetUser);
+        } else if (action === 'ban') {
+            this.bannedUsers.add(targetUserId);
+            this.leave(targetUser);
+        } else if (action === 'promote') {
+            this.host = targetUser;
+        }
+    }
+
+    // Task functions
+    addTask(taskData) {
+        this.tasks.push(taskData);
+        this.telemetry.tasksCreated++;
+    }
+
+    completeTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (task && !task.completed) {
+            task.completed = true;
+            this.telemetry.tasksCompleted++;
+        }
+    }
+
     // Timer pass-through functions
     startSession() {
         this.timer.startTimer();
+    }
+
+    pauseSession() {
+        this.timer.pauseTimer();
+    }
+
+    resumeSession() {
+        this.timer.resumeTimer();
     }
     
     stopSession() {
@@ -68,7 +140,9 @@ class Room {
         return {
             endTime: end.toISOString(),
             durationSeconds: durationSeconds,
-            maxParticipants: this.maxUsers
+            maxParticipants: this.maxUsers,
+            tasksCreated: this.telemetry.tasksCreated,
+            tasksCompleted: this.telemetry.tasksCompleted
         };
     }
 
@@ -77,10 +151,13 @@ class Room {
             id: this.id,
             host: this.host,
             users: Array.from(this.users),
+            isLocked: this.isLocked,
+            tasks: this.tasks,
             timer: this.timer.getStatus(),
             settings: this.settings
         };
     }
 }
 
+// Export variables
 export { Room };

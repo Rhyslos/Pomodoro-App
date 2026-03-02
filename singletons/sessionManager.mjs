@@ -2,21 +2,20 @@ import { Room } from '../modules/room.mjs';
 import { createRoomCode } from '../modules/lib.mjs';
 import db from '../modules/database.mjs';
 
-// Session manager class
+// Session management classes
 class SessionManager {
     constructor() {
         this.sessions = new Map();
     }
 
     // Session lifecycle functions
-    async createSession(hostUser) {
+    async createSession(hostUser, settings = {}) {
         const roomId = createRoomCode();
-        const newRoom = new Room(roomId, hostUser);
+        const newRoom = new Room(roomId, hostUser, settings);
         this.sessions.set(roomId, newRoom);
         
         await db.insertRoom({
             roomId: roomId,
-            hostId: hostUser.id || hostUser.userId,
             createdAt: newRoom.startTime
         });
 

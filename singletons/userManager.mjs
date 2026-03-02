@@ -1,6 +1,6 @@
 import { createUserID, createFriendCode } from '../modules/lib.mjs';
 
-// User manager class
+// User management classes
 class UserManager {
     constructor() {
         this.activeUsers = new Map();
@@ -15,6 +15,7 @@ class UserManager {
             userId: userId,
             friendCode: friendCode,
             username: username,
+            color: null,
             createdAt: new Date().toISOString()
         };
 
@@ -30,6 +31,17 @@ class UserManager {
     // Data retrieval functions
     async getUser(userId) {
         return this.activeUsers.get(userId) || null; 
+    }
+
+    // User update functions
+    async updateUser(userId, updates) {
+        const user = this.activeUsers.get(userId);
+        if (user) {
+            // Mutate the existing object so shared references in Rooms update automatically
+            Object.assign(user, updates);
+            return user;
+        }
+        return null;
     }
 
     // User deletion functions

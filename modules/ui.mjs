@@ -1,5 +1,6 @@
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
+import { t } from '/lang/client_i18n.mjs';
 
 // format functions
 export function formatTime(isoString) {
@@ -11,10 +12,14 @@ export function formatTime(isoString) {
 // render functions
 export async function loadView(viewName) {
     const html = await makeRequest(`/api/views/${viewName}`, "GET", null, "text");
+    
     if (html) {
         const container = document.getElementById('app-container');
-        if (container) container.innerHTML = html;
-        return true;
+        if (container) {
+            container.innerHTML = html;
+            translatePage(); // Run your translation sweep
+            return true;
+        }
     }
     return false;
 }
@@ -232,4 +237,19 @@ export function closeAdminModal() {
 export async function loadPolicy(policyType) {
     if (state.pollInterval) clearInterval(state.pollInterval);
     await loadView(policyType);
+}
+
+// localization functions
+export function translatePage() {
+    // 1. Translate static elements with a data-t attribute
+    document.querySelectorAll('[data-t]').forEach(el => {
+        const key = el.getAttribute('data-t');
+        el.innerText = t(key);
+    });
+
+    // 2. Translate placeholders
+    document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-t-placeholder');
+        el.placeholder = t(key);
+    });
 }

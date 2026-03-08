@@ -1,12 +1,12 @@
 import { t, getBrowserLang } from '/Lang/client_i18n.mjs';
 
-// gateway functions
 export async function makeRequest(url, method = "GET", body = null, responseType = "json") {
     try {
         const options = {
             method: method,
             headers: {
-                "Accept-Language": getBrowserLang()
+                // This now uses the override if it exists
+                "Accept-Language": getBrowserLang() 
             }
         };
 

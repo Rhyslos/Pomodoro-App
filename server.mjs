@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/modules', express.static('modules'));
-app.use('/lang', express.static('lang'));
+app.use('/lang', express.static('Lang'));
 app.use('/api', apiRoutes);
 
 // Server execution functions

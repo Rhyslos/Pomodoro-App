@@ -9,14 +9,33 @@ const dictionary = {
     "Room code copied to clipboard!": { en: "Room code copied to clipboard!", no: "Romkode kopiert til utklippstavlen!", ko: "방 코드가 클립보드에 복사되었습니다!" },
     "Enter new display name:": { en: "Enter new display name:", no: "Skriv inn nytt visningsnavn:", ko: "새 표시 이름을 입력하십시오:" },
     "Enter a new password:": { en: "Enter a new password:", no: "Skriv inn nytt passord:", ko: "새 비밀번호를 입력하십시오:" },
-    "Error:": { en: "Error:", no: "Feil:", ko: "오류:" }
+    "Error:": { en: "Error:", no: "Feil:", ko: "오류:" },
+    "Join Pomodoro": { en: "Join Pomodoro", no: "Bli med i Pomodoro", ko: "뽀모도로 시작하기" },
+    "Login": { en: "Login", no: "Logg inn", ko: "로그인" },
+    "Create Account": { en: "Create Account", no: "Opprett konto", ko: "계정 생성" },
+    "Toggle Theme": { en: "Toggle Theme", no: "Bytt tema", ko: "테마 변경" },
+    "Set Name Color": { en: "Set Name Color", no: "Velg farge på navn", ko: "이름 색상 설정" },
+    "Logout": { en: "Logout", no: "Logg ut", ko: "로그아웃" },
+    "Display Name": { en: "Display Name", no: "Visningsnavn", ko: "표시 이름" },
+    "Password": { en: "Password", no: "Passord", ko: "비밀번호" }
 };
 
 // language functions
 export function getBrowserLang() {
+    // Check for manual override first
+    const savedLang = localStorage.getItem('pomodoro_lang');
+    if (savedLang && ['en', 'no', 'ko'].includes(savedLang)) return savedLang;
+
     const lang = navigator.language.slice(0, 2);
     if (['en', 'no', 'ko'].includes(lang)) return lang;
     return 'en';
+}
+
+export function setLanguage(langCode) {
+    if (['en', 'no', 'ko'].includes(langCode)) {
+        localStorage.setItem('pomodoro_lang', langCode);
+        window.location.reload(); // Reload to apply changes everywhere
+    }
 }
 
 // translation functions

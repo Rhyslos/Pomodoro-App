@@ -9,19 +9,27 @@
 </head>
 <body>
     <header>
-        <div class="settings-container">
-            <button onclick="toggleSettings()" class="icon-btn">&#9776;</button>
-            <div id="settings-menu" class="hidden">
-                <ul>
-                    <li><a href="#" onclick="toggleTheme(); return false;">Toggle Theme</a></li>
-                    <li><a href="#" onclick="triggerColorPicker(); return false;">Set Name Color</a></li>
-                    
-                    <user-widget mode="profile"></user-widget>
-                    
-                    <li class="menu-spacer"></li>
-                    <li><a href="#" onclick="logoutAccount(); return false;">Logout</a></li>
-                </ul>
-            </div>
+    <div class="settings-container">
+        <button onclick="toggleSettings()" class="icon-btn" aria-label="Menu">&#9776;</button>
+        
+        <div id="settings-menu" class="hidden">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a href="#" onclick="toggleTheme(); return false;" data-t="Toggle Theme">Toggle Theme</a></li>
+                <li><a href="#" onclick="triggerColorPicker(); return false;" data-t="Set Name Color">Set Name Color</a></li>
+                
+                <li class="menu-spacer"></li>                
+                <li class="menu-label" data-t="Language / Språk / 언어">Language / Språk / 언어</li>
+                <li><a href="#" onclick="changeLanguage('en'); return false;">🇺🇸 English</a></li>
+                <li><a href="#" onclick="changeLanguage('no'); return false;">🇳🇴 Norsk</a></li>
+                <li><a href="#" onclick="changeLanguage('ko'); return false;">🇰🇷 한국어</a></li>
+                
+                <li class="menu-spacer"></li>
+                <user-widget mode="profile"></user-widget>
+                
+                <li class="menu-spacer"></li>
+                <li><a href="#" onclick="logoutAccount(); return false;" data-t="Logout">Logout</a></li>
+            </ul>
+        </div>
             <input type="color" id="name-color-picker" class="hidden" onchange="changeDisplayColor(event)">
         </div>
     </header>

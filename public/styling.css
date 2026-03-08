@@ -146,12 +146,25 @@ header {
 }
 
 #settings-menu li a {
-    display: block;
+    display: flex;
+    align-items: center;
     padding: 12px 20px;
-    color: var(--text-main);
     text-decoration: none;
-    font-size: 0.95rem;
-    transition: background-color 0.2s;
+    color: var(--text-main);
+    gap: 12px;
+}
+
+#settings-menu li a:before {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+
+.menu-label {
+    padding: 15px 20px 5px 20px; 
+    font-size: 0.7rem;
+    color: var(--text-subtitle);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
 }
 
 #settings-menu li a:hover {
@@ -904,3 +917,4 @@ user-widget {
 user-widget[mode="profile"] {
     display: contents; 
 }
+

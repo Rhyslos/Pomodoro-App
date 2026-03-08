@@ -1,3 +1,4 @@
+import { t } from '/lang/client_i18n.mjs';
 import { handleLogin, handleRegister, deleteAccount, changeDisplayName, changePassword } from './auth.mjs';
 
 // component functions
@@ -12,17 +13,11 @@ class UserWidget extends HTMLElement {
         if (this.mode === 'auth') {
             this.innerHTML = `
                 <div class="form-group">
-                    <input type="text" id="wc-username" placeholder="Enter display name">
-                    <input type="password" id="wc-password" placeholder="Enter password">
+                    <input type="text" id="wc-username" placeholder="${t('Display Name')}">
+                    <input type="password" id="wc-password" placeholder="${t('Password')}">
                 </div>
-                <div class="checkbox-group" style="margin-bottom: 1.5rem; text-align: left;">
-                    <input type="checkbox" id="wc-tos">
-                    <label for="wc-tos" style="font-size: 0.85rem;">I actively consent to the <a href="#" onclick="window.loadPolicy('tos'); return false;">Terms of Service</a> and <a href="#" onclick="window.loadPolicy('privacy'); return false;">Privacy Policy</a>.</label>
-                </div>
-                <div class="button-group" style="flex-direction: column; gap: 10px;">
-                    <button id="wc-login-btn" style="width: 100%; margin: 0;">Login</button>
-                    <button id="wc-register-btn" class="cancel-btn" style="width: 100%; margin: 0;">Create Account</button>
-                </div>
+                <button id="wc-login-btn">${t('Login')}</button>
+                <button id="wc-register-btn">${t('Create Account')}</button>
             `;
 
             this.querySelector('#wc-login-btn').addEventListener('click', () => {

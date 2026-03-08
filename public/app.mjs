@@ -4,6 +4,7 @@ import { state } from './modules/state.mjs';
 import { loadView, showDashboardScreen, toggleSettings, toggleTheme, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, closeDeleteModal, openTaskModal, closeTaskModal, closeAdminModal, loadPolicy } from './modules/ui.mjs';
 import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
 import { createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
+import { setLanguage } from '/Lang/client_i18n.mjs';
 // lifecycle functions
 window.onload = async () => {
     const savedTheme = localStorage.getItem('pomodoro_theme');
@@ -58,3 +59,6 @@ window.changeDisplayColor = changeDisplayColor;
 window.loadPolicy = loadPolicy;
 window.goHome = goHome;
 window.addFakeUser = addFakeUser;
+window.changeLanguage = (lang) => {
+    setLanguage(lang);
+};

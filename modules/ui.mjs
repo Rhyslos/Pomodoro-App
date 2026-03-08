@@ -1,0 +1,235 @@
+import { makeRequest } from './network.mjs';
+import { state } from './state.mjs';
+
+// format functions
+export function formatTime(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// render functions
+export async function loadView(viewName) {
+    const html = await makeRequest(`/api/views/${viewName}`, "GET", null, "text");
+    if (html) {
+        const container = document.getElementById('app-container');
+        if (container) container.innerHTML = html;
+        return true;
+    }
+    return false;
+}
+
+export async function showDashboardScreen() {
+    const loaded = await loadView('dashboard');
+    if (loaded) {
+        const welcomeMsg = document.getElementById('welcome-msg');
+        if (welcomeMsg) {
+            welcomeMsg.innerText = `Welcome, ${state.currentUser.username}`;
+        }
+    }
+}
+
+export function renderRoom(status) {
+    const roomNameDisplay = document.getElementById('room-name-display');
+    const roomCodeDisplay = document.getElementById('room-code-display');
+    const roomCodeSubtitle = document.getElementById('room-code-subtitle');
+    const lockBtn = document.getElementById('lock-btn');
+    const hostEndBtn = document.getElementById('host-end-btn');
+    
+    const timerDisplay = document.getElementById('timer-display');
+    const statusDisplay = document.getElementById('status-display');
+    const primaryBtn = document.getElementById('primary-timer-btn');
+    const namesContainer = document.getElementById('floating-names-container');
+    const debugBtn = document.getElementById('debug-fake-user-btn');
+
+    if (roomNameDisplay) roomNameDisplay.innerText = status.settings.roomName;
+    if (roomCodeDisplay) roomCodeDisplay.innerText = status.id;
+    
+    if (roomCodeSubtitle) {
+        if (status.settings.showCode) {
+            roomCodeSubtitle.classList.remove('hidden');
+        } else {
+            roomCodeSubtitle.classList.add('hidden');
+        }
+    }
+
+    if (state.currentUser && status.host.userId === state.currentUser.userId) {
+        if (lockBtn) {
+            lockBtn.classList.remove('hidden');
+            lockBtn.innerText = status.isLocked ? '🔒' : '🔓';
+        }
+        if (hostEndBtn) hostEndBtn.classList.remove('hidden');
+    } else {
+        if (lockBtn) lockBtn.classList.add('hidden');
+        if (hostEndBtn) hostEndBtn.classList.add('hidden');
+    }
+
+    if (debugBtn) {
+        if (status.settings.debugMode) {
+            debugBtn.classList.remove('hidden');
+        } else {
+            debugBtn.classList.add('hidden');
+        }
+    }
+    
+    const minutes = Math.floor(status.timer.remaining / 60);
+    const seconds = status.timer.remaining % 60;
+    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timerDisplay) timerDisplay.innerText = timeString;
+    if (statusDisplay) statusDisplay.innerText = status.timer.state.toUpperCase();
+
+    if (primaryBtn) {
+        if (status.timer.state === 'idle' || status.timer.state === 'finished') {
+            primaryBtn.innerHTML = 'Start';
+            primaryBtn.onclick = () => window.sendTimerAction('start');
+        } else if (status.timer.isPaused) {
+            primaryBtn.innerHTML = '&#9654;'; 
+            primaryBtn.onclick = () => window.sendTimerAction('resume');
+        } else {
+            primaryBtn.innerHTML = '&#10074;&#10074;'; 
+            primaryBtn.onclick = () => window.sendTimerAction('pause');
+        }
+    }
+
+    if (namesContainer && status.users) {
+        const currentUsersStr = JSON.stringify(status.users.map(u => ({ n: u.username, c: u.color })).sort((a,b) => a.n.localeCompare(b.n)));
+        
+        if (namesContainer.dataset.users !== currentUsersStr) {
+            namesContainer.dataset.users = currentUsersStr;
+            namesContainer.innerHTML = '';
+            
+            const numUsers = status.users.length;
+            const radius = 46; 
+            
+            status.users.forEach((user, index) => {
+                const angle = (index / numUsers) * (2 * Math.PI);
+                
+                const x = 50 + (radius * Math.cos(angle));
+                const y = 50 + (radius * Math.sin(angle));
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'floating-name';
+                nameEl.innerText = user.username;
+                nameEl.style.left = `${x}%`;
+                nameEl.style.top = `${y}%`;
+
+                if (user.color) {
+                    nameEl.style.backgroundColor = user.color;
+                    nameEl.style.boxShadow = `0 4px 10px ${user.color}50`;
+                    nameEl.style.color = '#FFFFFF';
+                    nameEl.classList.add('has-custom-color');
+                }
+
+                nameEl.onclick = () => window.handleUserClick(user.userId, user.username);
+
+                nameEl.style.setProperty('--dir-x', index % 2 === 0 ? 1 : -1);
+                nameEl.style.setProperty('--dir-y', index % 3 === 0 ? -1 : 1);
+                nameEl.style.animationDuration = `${8 + (index % 4) * 2}s`;
+
+                namesContainer.appendChild(nameEl);
+            });
+        }
+    }
+
+    const tasksContainer = document.getElementById('tasks-container');
+    const tasksGrid = document.getElementById('tasks-grid');
+
+    if (tasksContainer && tasksGrid && status.tasks) {
+        if (status.tasks.length > 0) {
+            const tasksHTML = status.tasks.map(task => {
+                const customClass = task.color ? 'has-custom-color' : '';
+                const customStyle = task.color ? `style="border-top: 4px solid ${task.color};"` : '';
+                
+                return `
+                <div class="task-card ${task.completed ? 'completed' : ''} ${customClass}" data-user="${task.userId}" ${customStyle}>
+                    <div class="task-user">${task.username}</div>
+                    <h4 class="task-name">${task.name}</h4>
+                    ${task.description ? `<p class="task-desc">${task.description}</p>` : ''}
+                    ${!task.completed && task.userId === state.currentUser.userId ? `<button class="task-complete-btn" onclick="window.completeTask('${task.id}')">Complete</button>` : ''}
+                    
+                    <div class="task-meta">
+                        <span>${formatTime(task.createdAt)}</span>
+                        <span>${task.completed ? `✓ ${formatTime(task.completedAt)}` : ''}</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            if (tasksGrid.innerHTML !== tasksHTML) {
+                tasksGrid.innerHTML = tasksHTML;
+            }
+        } else {
+            tasksGrid.innerHTML = '<p style="color: var(--text-muted); font-size: 0.95rem; grid-column: 1 / -1; text-align: center; margin: 1rem 0;">No tasks added yet. Click the + to add your first task!</p>';
+        }
+    }
+}
+
+// settings functions
+export function toggleSettings() {
+    const menu = document.getElementById('settings-menu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+export function toggleTheme() {
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.contains('dark-theme');
+    localStorage.setItem('pomodoro_theme', isDark ? 'dark' : 'light');
+    toggleSettings();
+}
+
+export function triggerColorPicker() {
+    const picker = document.getElementById('name-color-picker');
+    if (picker) {
+        picker.click();
+    }
+    toggleSettings();
+}
+
+export function openCreateRoomModal() {
+    const modal = document.getElementById('create-room-modal');
+    if (modal) {
+        const nameInput = document.getElementById('setting-room-name');
+        if (nameInput && state.currentUser) {
+            nameInput.value = `${state.currentUser.username}'s Room`;
+        }
+        modal.classList.remove('hidden');
+    }
+}
+
+export function closeCreateRoomModal() {
+    const modal = document.getElementById('create-room-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export function closeDeleteModal() {
+    const modal = document.getElementById('delete-account-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export function openTaskModal() {
+    const modal = document.getElementById('task-modal');
+    if (modal) {
+        document.getElementById('task-name').value = '';
+        document.getElementById('task-desc').value = '';
+        modal.classList.remove('hidden');
+    }
+}
+
+export function closeTaskModal() {
+    const modal = document.getElementById('task-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export function closeAdminModal() {
+    document.getElementById('admin-modal').classList.add('hidden');
+    state.adminTargetUser = null;
+}
+
+// navigation functions
+export async function loadPolicy(policyType) {
+    if (state.pollInterval) clearInterval(state.pollInterval);
+    await loadView(policyType);
+}

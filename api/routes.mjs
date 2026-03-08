@@ -3,42 +3,47 @@ import fs from 'fs/promises';
 import path from 'path';
 import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
+import { t, getLang } from '../lang/server_i18n.mjs';
 
-// initialization functions
+// Initialization functions
 const router = express.Router();
 
-// middleware functions
+// Middleware functions
 const requireAuth = async (req, res, next) => {
+    const lang = getLang(req.headers['accept-language']);
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
+    
+    if (!token) return res.status(401).json({ error: t("Unauthorized", lang) });
 
     const user = await userManager.getUserByToken(token);
-    if (!user) return res.status(401).json({ error: "Invalid session" });
+    if (!user) return res.status(401).json({ error: t("Invalid session", lang) });
 
     req.user = user;
     req.token = token;
     next();
 };
 
-// view routing functions
+// View routing functions
 router.get('/views/:viewName', async (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     try {
         const viewPath = path.join(process.cwd(), 'views', `${req.params.viewName}.html`);
         const html = await fs.readFile(viewPath, 'utf-8');
         res.send(html);
     } catch (error) {
-        res.status(404).send("View not found");
+        res.status(404).send(t("View not found", lang));
     }
 });
 
-// user routing functions
+// User routing functions
 router.post('/users/register', async (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     try {
         const { username, password } = req.body;
-        if (!username || !password) return res.status(400).json({ error: "Missing fields" });
+        if (!username || !password) return res.status(400).json({ error: t("Missing fields", lang) });
 
         const user = await userManager.createUser(username, password);
-        if (!user) return res.status(409).json({ error: "Username taken" });
+        if (!user) return res.status(409).json({ error: t("Username taken", lang) });
 
         const session = await userManager.loginUser(username, password);
         res.status(201).json(session);
@@ -48,11 +53,12 @@ router.post('/users/register', async (req, res) => {
 });
 
 router.post('/users/login', async (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     try {
         const { username, password } = req.body;
         const session = await userManager.loginUser(username, password);
         
-        if (!session) return res.status(401).json({ error: "Invalid credentials" });
+        if (!session) return res.status(401).json({ error: t("Invalid credentials", lang) });
         res.status(200).json(session);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -86,42 +92,41 @@ router.delete('/users/me', requireAuth, async (req, res) => {
     }
 });
 
-// session routing functions
+// Session routing functions
 router.post('/sessions', requireAuth, async (req, res) => {
     const { settings } = req.body;
-    
     const room = await sessionManager.createSession(req.user, settings); 
     res.status(201).json({ roomId: room.id });
 });
 
 router.get('/sessions/:roomId', (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
     if (!room) {
-        return res.status(404).json({ error: "Room not found" });
+        return res.status(404).json({ error: t("Room not found", lang) });
     }
     res.json(room.getStatus());
 });
 
 router.post('/sessions/:roomId/join', requireAuth, async (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const { roomId } = req.params;
 
     const room = sessionManager.getSession(roomId);
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
     const joined = room.join(req.user);
-    if (!joined) return res.status(403).json({ error: "Room is locked or full" });
+    if (!joined) return res.status(403).json({ error: t("Room is locked or full", lang) });
 
     res.json(room.getStatus());
 });
 
 router.post('/sessions/:roomId/leave', requireAuth, async (req, res) => {
     const { roomId } = req.params;
-
     const room = sessionManager.getSession(roomId);
     if (room) {
         room.leave(req.user);
     }
-    
     res.status(200).json({ message: "Left room" });
 });
 
@@ -135,11 +140,12 @@ router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
 });
 
 router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const { roomId } = req.params;
     const { action, payload } = req.body; 
     
     const room = sessionManager.getSession(roomId);
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
     if (action === "start") room.startSession();
     if (action === "pause") room.pauseSession();
@@ -150,10 +156,11 @@ router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     res.json(room.getStatus());
 });
 
-// task routing functions
+// Task routing functions
 router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
     const task = { 
         ...req.body, 
@@ -166,32 +173,35 @@ router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
 });
 
 router.patch('/sessions/:roomId/tasks/:taskId', requireAuth, (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
     room.completeTask(req.params.taskId);
     res.status(200).json({ message: "Task completed" });
 });
 
-// admin routing functions
+// Admin routing functions
 router.post('/sessions/:roomId/lock', requireAuth, (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
     
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
     
     room.toggleLock(req.user.userId);
     res.status(200).json({ message: "Lock toggled" });
 });
 
 router.post('/sessions/:roomId/admin', requireAuth, (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const { targetId, action } = req.body;
     const room = sessionManager.getSession(req.params.roomId);
     
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
     room.adminAction(req.user.userId, targetId, action);
     res.status(200).json({ message: "Admin action executed" });
 });
 
-// export functions
+// Export functions
 export default router;

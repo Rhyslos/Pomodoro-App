@@ -1,14 +1,14 @@
 import crypto from 'node:crypto';
 import { createUserID } from '../modules/lib.mjs';
 
-// user management classes
+// User management classes
 class UserManager {
     constructor() {
         this.users = new Map();
         this.sessions = new Map();
     }
 
-    // security functions
+    // Security functions
     hashPassword(password) {
         return crypto.createHash('sha256').update(password).digest('hex');
     }
@@ -17,7 +17,7 @@ class UserManager {
         return crypto.randomBytes(32).toString('hex');
     }
 
-    // account creation functions
+    // Account creation functions
     async createUser(username, password) {
         for (const user of this.users.values()) {
             if (user.username === username) return null;
@@ -38,7 +38,7 @@ class UserManager {
         return { userId, username, color: newUser.color };
     }
 
-    // authentication functions
+    // Authentication functions
     async loginUser(username, password) {
         const hash = this.hashPassword(password);
         
@@ -52,7 +52,7 @@ class UserManager {
         return null;
     }
 
-    // session validation functions
+    // Session validation functions
     async getUserByToken(token) {
         const userId = this.sessions.get(token);
         if (!userId) return null;
@@ -63,7 +63,7 @@ class UserManager {
         return { userId: user.userId, username: user.username, color: user.color };
     }
 
-    // data update functions
+    // Data update functions
     async updateUser(userId, updates) {
         const user = this.users.get(userId);
         if (!user) return null;
@@ -75,7 +75,7 @@ class UserManager {
         return { userId: user.userId, username: user.username, color: user.color };
     }
 
-    // account deletion functions
+    // Account deletion functions
     async deleteUser(userId) {
         this.users.delete(userId);
         
@@ -86,12 +86,12 @@ class UserManager {
         }
     }
     
-    // session termination functions
+    // Session termination functions
     async logoutUser(token) {
         this.sessions.delete(token);
     }
 }
 
-// export variables
+// Export variables
 const userManager = new UserManager();
 export { userManager };

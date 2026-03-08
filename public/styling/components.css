@@ -206,3 +206,13 @@ button:active {
     margin-bottom: 0;
     flex: 1;
 }
+
+/* component styling fixes */
+user-widget {
+    display: block;
+    width: 100%;
+}
+
+user-widget[mode="profile"] {
+    display: contents; 
+}

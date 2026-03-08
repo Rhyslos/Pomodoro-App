@@ -1,6 +1,7 @@
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeTaskModal, closeAdminModal } from './ui.mjs';
+import { t } from '/Lang/client_i18n.mjs';
 
 // polling functions
 export async function updateRoomStatus() {
@@ -16,7 +17,7 @@ export async function updateRoomStatus() {
         state.currentRoomId = null;
         state.currentRoomStatus = null;
         await showDashboardScreen();
-        alert("Session has ended or you were disconnected.");
+        alert(t("Session has ended or you were disconnected."));
     }
 }
 
@@ -65,7 +66,7 @@ export async function joinRoom() {
     if (!state.currentUser) return;
     
     const codeInput = document.getElementById('roomCodeInput');
-    if (!codeInput || !codeInput.value) return alert("Please enter a room code");
+    if (!codeInput || !codeInput.value) return alert(t("Please enter a room code"));
     
     const code = codeInput.value.trim().toUpperCase();
     const room = await makeRequest(`/api/sessions/${code}/join`, "POST");
@@ -123,7 +124,7 @@ export function sendTimerAction(action) {
 export function copyRoomCode() {
     if (!state.currentRoomId) return;
     navigator.clipboard.writeText(state.currentRoomId).then(() => {
-        alert("Room code copied to clipboard!");
+        alert(t("Room code copied to clipboard!"));
     });
 }
 
@@ -134,7 +135,7 @@ export function createTask() {
     const name = document.getElementById('task-name').value.trim();
     const desc = document.getElementById('task-desc').value.trim();
     
-    if (!name) return alert("Task name is required");
+    if (!name) return alert(t("Task name is required"));
 
     const newTask = {
         name: name,

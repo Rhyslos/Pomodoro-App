@@ -1,9 +1,13 @@
+import { t, getBrowserLang } from '/Lang/client_i18n.mjs';
+
 // gateway functions
 export async function makeRequest(url, method = "GET", body = null, responseType = "json") {
     try {
         const options = {
             method: method,
-            headers: {}
+            headers: {
+                "Accept-Language": getBrowserLang()
+            }
         };
 
         const token = localStorage.getItem('pomodoro_token');
@@ -29,7 +33,7 @@ export async function makeRequest(url, method = "GET", body = null, responseType
         return await response.json();
     } catch (error) {
         console.error("API Error:", error);
-        alert("Error: " + error.message);
+        alert(`${t("Error:")} ${error.message}`);
         return null;
     }
 }

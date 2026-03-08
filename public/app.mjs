@@ -1,3 +1,4 @@
+import './modules/userWidget.mjs';
 import { makeRequest } from './modules/network.mjs';
 import { state } from './modules/state.mjs';
 import { loadView, showDashboardScreen, toggleSettings, toggleTheme, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, closeDeleteModal, openTaskModal, closeTaskModal, closeAdminModal, loadPolicy } from './modules/ui.mjs';

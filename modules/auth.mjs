@@ -1,12 +1,12 @@
+// user action functions
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { showDashboardScreen, loadView, toggleSettings, closeDeleteModal, renderRoom } from './ui.mjs';
+import { t } from '/Lang/client_i18n.mjs';
 
-// user action functions
-export async function handleLogin() {
-    const username = document.getElementById('usernameInput').value;
-    const password = document.getElementById('passwordInput').value;
-    if (!username || !password) return alert("Please enter both username and password");
+// authentication functions
+export async function handleLogin(username, password) {
+    if (!username || !password) return alert(t("Please enter both username and password"));
 
     const response = await makeRequest("/api/users/login", "POST", { username, password });
     
@@ -17,13 +17,9 @@ export async function handleLogin() {
     }
 }
 
-export async function handleRegister() {
-    const username = document.getElementById('usernameInput').value;
-    const password = document.getElementById('passwordInput').value;
-    const hasConsented = document.getElementById('tos-consent').checked;
-    
-    if (!username || !password) return alert("Please enter both username and password");
-    if (!hasConsented) return alert("You must agree to the Terms of Service and Privacy Policy to create an account.");
+export async function handleRegister(username, password, hasConsented) {
+    if (!username || !password) return alert(t("Please enter both username and password"));
+    if (!hasConsented) return alert(t("You must agree to the Terms of Service and Privacy Policy to create an account."));
 
     const response = await makeRequest("/api/users/register", "POST", { username, password });
     
@@ -34,6 +30,7 @@ export async function handleRegister() {
     }
 }
 
+// account lifecycle functions
 export async function logoutAccount() {
     await makeRequest("/api/users/logout", "POST");
     localStorage.removeItem('pomodoro_token');
@@ -73,10 +70,10 @@ export async function confirmDeleteAccount() {
     await loadView('login');
 }
 
-// settings functions
+// profile settings functions
 export function changeDisplayName() {
     if (!state.currentUser) return;
-    const newName = prompt("Enter new display name:", state.currentUser.username);
+    const newName = prompt(t("Enter new display name:"), state.currentUser.username);
     if (!newName || newName.trim() === "") return;
 
     const finalName = newName.trim();
@@ -97,12 +94,12 @@ export function changeDisplayName() {
 
 export function changePassword() {
     if (!state.currentUser) return;
-    const newPassword = prompt("Enter a new password:");
+    const newPassword = prompt(t("Enter a new password:"));
     if (!newPassword || newPassword.trim() === "") return;
 
     toggleSettings();
     makeRequest("/api/users/me", "PATCH", { password: newPassword }).then(res => {
-        if (res) alert("Password updated successfully.");
+        if (res) alert(t("Password updated successfully."));
     });
 }
 

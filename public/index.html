@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro App</title>
-    <link rel="stylesheet" href="styling/main.css">
+    <link rel="stylesheet" href="styling.css">
     <script type="module" src="app.mjs" defer></script>
 </head>
 <body>
@@ -14,12 +14,12 @@
             <div id="settings-menu" class="hidden">
                 <ul>
                     <li><a href="#" onclick="toggleTheme(); return false;">Toggle Theme</a></li>
-                    <li><a href="#" onclick="changeDisplayName(); return false;">Change Name</a></li>
                     <li><a href="#" onclick="triggerColorPicker(); return false;">Set Name Color</a></li>
-                    <li><a href="#" onclick="changePassword(); return false;">Change Password</a></li>
+                    
+                    <user-widget mode="profile"></user-widget>
+                    
                     <li class="menu-spacer"></li>
                     <li><a href="#" onclick="logoutAccount(); return false;">Logout</a></li>
-                    <li><a href="#" onclick="deleteAccount(); return false;" class="danger-text">Delete Account</a></li>
                 </ul>
             </div>
             <input type="color" id="name-color-picker" class="hidden" onchange="changeDisplayColor(event)">
@@ -35,7 +35,7 @@
             
             <div class="policy-snippet">
                 <strong>Privacy Policy Notice:</strong><br>
-                Deleting your account will immediately erase your account, display name, and session data from your device and drop your active connections. Anonymous telemetry regarding room interactions remains to maintain room integrity, but cannot be traced back to you.
+                Deleting your account will immediately erase your display name, password hash, and session data from your device and drop your active connections. Anonymous telemetry regarding room interactions remains to maintain room integrity, but cannot be traced back to you.
             </div>
             
             <p style="font-size: 0.9rem; margin-bottom: 0;">You can always come back and create a new account at any time!</p>
@@ -48,8 +48,8 @@
     </div>
 
     <footer>
-        <a href="#" onclick="loadPolicy('privacy')">Privacy Policy</a>
-        <a href="#" onclick="loadPolicy('tos')">Terms of Service</a>
+        <a href="#" onclick="window.loadPolicy('privacy'); return false;">Privacy Policy</a>
+        <a href="#" onclick="window.loadPolicy('tos'); return false;">Terms of Service</a>
     </footer>
 </body>
 </html>

@@ -1,0 +1,145 @@
+/* Responsive styling */
+@media (max-width: 800px) {
+    #app-container {
+        padding: 1rem;
+    }
+
+    #login-screen, #dashboard-screen, #room-screen, .policy-container {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .modal-content {
+        padding: 1.5rem;
+    }
+
+    .modal-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    header {
+        top: 10px;
+        right: 10px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    span {
+        font-size: 1.2rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .button-group.timer-controls {
+        flex-direction: row;
+    }
+
+    .join-group {
+        flex-direction: column;
+    }
+
+    .join-group input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .debug-btn {
+        width: 100%;
+    }
+
+    .timer-wrapper {
+        padding: 30px 10px;
+    }
+
+    .primary-timer-btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+        height: 50px;
+        min-width: 90px;
+        margin: 0;
+    }
+
+    .stop-btn {
+        width: 50px;
+        height: 50px;
+        margin: 0;
+    }
+
+    .room-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .room-header .warning-btn {
+        width: 100%;
+        margin: 0;
+    }
+
+    .tasks-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 801px) {
+    #room-screen {
+        max-width: 800px;
+        padding: 3.5rem;
+    }
+    
+    .timer-wrapper {
+        padding: 80px 40px;
+        margin: 2.5rem 0;
+    }
+    
+    .timer-controls {
+        gap: 25px;
+    }
+    
+    .primary-timer-btn {
+        min-width: 140px;
+        height: 60px;
+        font-size: 1.3rem;
+    }
+    
+    .stop-btn {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .stop-btn::after {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (min-width: 1400px) {
+    body {
+        font-size: 18px;
+    }
+
+    #login-screen, #dashboard-screen, #room-screen {
+        padding: 4rem;
+    }
+
+    .policy-container {
+        max-width: 800px;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    span {
+        font-size: 1.8rem;
+    }
+
+    .timer-wrapper {
+        padding: 100px 50px;
+    }
+}

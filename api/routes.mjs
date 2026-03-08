@@ -4,10 +4,23 @@ import path from 'path';
 import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
 
-// Initialization functions
+// initialization functions
 const router = express.Router();
 
-// View routing functions
+// middleware functions
+const requireAuth = async (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    const user = await userManager.getUserByToken(token);
+    if (!user) return res.status(401).json({ error: "Invalid session" });
+
+    req.user = user;
+    req.token = token;
+    next();
+};
+
+// view routing functions
 router.get('/views/:viewName', async (req, res) => {
     try {
         const viewPath = path.join(process.cwd(), 'views', `${req.params.viewName}.html`);
@@ -18,63 +31,66 @@ router.get('/views/:viewName', async (req, res) => {
     }
 });
 
-// User routing functions
-router.post('/users', async (req, res) => {
+// user routing functions
+router.post('/users/register', async (req, res) => {
     try {
-        const { username } = req.body;
-        const user = await userManager.createUser(username);
-        res.status(201).json(user);
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ error: "Missing fields" });
+
+        const user = await userManager.createUser(username, password);
+        if (!user) return res.status(409).json({ error: "Username taken" });
+
+        const session = await userManager.loginUser(username, password);
+        res.status(201).json(session);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.post('/users/restore', async (req, res) => {
+router.post('/users/login', async (req, res) => {
     try {
-        const user = await userManager.restoreUser(req.body);
-        res.status(200).json(user);
+        const { username, password } = req.body;
+        const session = await userManager.loginUser(username, password);
+        
+        if (!session) return res.status(401).json({ error: "Invalid credentials" });
+        res.status(200).json(session);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.get('/users/:userId', async (req, res) => {
+router.post('/users/logout', requireAuth, async (req, res) => {
+    await userManager.logoutUser(req.token);
+    res.status(200).json({ message: "Logged out" });
+});
+
+router.get('/users/me', requireAuth, (req, res) => {
+    res.json(req.user);
+});
+
+router.patch('/users/me', requireAuth, async (req, res) => {
     try {
-        const user = await userManager.getUser(req.params.userId);
-        if (!user) return res.status(404).json({ error: "User not found" });
-        res.json(user);
+        const updatedUser = await userManager.updateUser(req.user.userId, req.body);
+        res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.patch('/users/:userId', async (req, res) => {
+router.delete('/users/me', requireAuth, async (req, res) => {
     try {
-        const user = await userManager.updateUser(req.params.userId, req.body);
-        if (!user) return res.status(404).json({ error: "User not found" });
-        res.json(user);
+        await userManager.deleteUser(req.user.userId);
+        res.status(200).json({ message: "Account deleted" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.delete('/users/:userId', async (req, res) => {
-    try {
-        await userManager.deleteUser(req.params.userId);
-        res.status(200).json({ message: "User deleted" });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Session routing functions
-router.post('/sessions', async (req, res) => {
-    const { hostId, settings } = req.body;
-    const user = await userManager.getUser(hostId);
+// session routing functions
+router.post('/sessions', requireAuth, async (req, res) => {
+    const { settings } = req.body;
     
-    if (!user) return res.status(404).json({ error: "User not found" });
-    
-    const room = await sessionManager.createSession(user, settings); 
+    const room = await sessionManager.createSession(req.user, settings); 
     res.status(201).json({ roomId: room.id });
 });
 
@@ -86,36 +102,30 @@ router.get('/sessions/:roomId', (req, res) => {
     res.json(room.getStatus());
 });
 
-router.post('/sessions/:roomId/join', async (req, res) => {
+router.post('/sessions/:roomId/join', requireAuth, async (req, res) => {
     const { roomId } = req.params;
-    const { userId } = req.body;
 
     const room = sessionManager.getSession(roomId);
     if (!room) return res.status(404).json({ error: "Room not found" });
 
-    const user = await userManager.getUser(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const joined = room.join(user);
+    const joined = room.join(req.user);
     if (!joined) return res.status(403).json({ error: "Room is locked or full" });
 
     res.json(room.getStatus());
 });
 
-router.post('/sessions/:roomId/leave', async (req, res) => {
+router.post('/sessions/:roomId/leave', requireAuth, async (req, res) => {
     const { roomId } = req.params;
-    const { userId } = req.body;
 
     const room = sessionManager.getSession(roomId);
     if (room) {
-        const user = await userManager.getUser(userId);
-        if (user) room.leave(user);
+        room.leave(req.user);
     }
     
     res.status(200).json({ message: "Left room" });
 });
 
-router.delete('/sessions/:roomId', async (req, res) => {
+router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
     try {
         await sessionManager.endSession(req.params.roomId);
         res.status(200).json({ message: "Session ended" });
@@ -124,7 +134,7 @@ router.delete('/sessions/:roomId', async (req, res) => {
     }
 });
 
-router.post('/sessions/:roomId/action', (req, res) => {
+router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     const { roomId } = req.params;
     const { action, payload } = req.body; 
     
@@ -140,8 +150,8 @@ router.post('/sessions/:roomId/action', (req, res) => {
     res.json(room.getStatus());
 });
 
-// Task routing functions
-router.post('/sessions/:roomId/tasks', (req, res) => {
+// task routing functions
+router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
     const room = sessionManager.getSession(req.params.roomId);
     if (!room) return res.status(404).json({ error: "Room not found" });
 
@@ -155,7 +165,7 @@ router.post('/sessions/:roomId/tasks', (req, res) => {
     res.status(201).json(task);
 });
 
-router.patch('/sessions/:roomId/tasks/:taskId', (req, res) => {
+router.patch('/sessions/:roomId/tasks/:taskId', requireAuth, (req, res) => {
     const room = sessionManager.getSession(req.params.roomId);
     if (!room) return res.status(404).json({ error: "Room not found" });
 
@@ -163,26 +173,25 @@ router.patch('/sessions/:roomId/tasks/:taskId', (req, res) => {
     res.status(200).json({ message: "Task completed" });
 });
 
-// Admin routing functions
-router.post('/sessions/:roomId/lock', (req, res) => {
-    const { hostId } = req.body;
+// admin routing functions
+router.post('/sessions/:roomId/lock', requireAuth, (req, res) => {
     const room = sessionManager.getSession(req.params.roomId);
     
     if (!room) return res.status(404).json({ error: "Room not found" });
     
-    room.toggleLock(hostId);
+    room.toggleLock(req.user.userId);
     res.status(200).json({ message: "Lock toggled" });
 });
 
-router.post('/sessions/:roomId/admin', (req, res) => {
-    const { hostId, targetId, action } = req.body;
+router.post('/sessions/:roomId/admin', requireAuth, (req, res) => {
+    const { targetId, action } = req.body;
     const room = sessionManager.getSession(req.params.roomId);
     
     if (!room) return res.status(404).json({ error: "Room not found" });
 
-    room.adminAction(hostId, targetId, action);
+    room.adminAction(req.user.userId, targetId, action);
     res.status(200).json({ message: "Admin action executed" });
 });
 
-// Export functions
+// export functions
 export default router;

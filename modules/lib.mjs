@@ -1,8 +1,5 @@
 import { randomBytes } from "node:crypto";
 
-// Export variables
-export const print = console.log;
-
 // Room generation functions
 export function createRoomCode(){
     let RoomCode    = "";

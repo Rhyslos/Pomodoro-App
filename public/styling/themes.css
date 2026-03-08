@@ -1,0 +1,64 @@
+/* Variable definitions */
+:root {
+    --bg-color: #FAF3E0;
+    --text-main: #4A403A;
+    --text-muted: #8C7A6B;
+    --text-subtitle: #A39189;
+    --container-bg: #FFFFFF;
+    --input-bg: #FCF9F2;
+    --border-color: #F1E8D9;
+    --shadow-color: rgba(92, 74, 66, 0.08);
+    --modal-overlay: rgba(74, 64, 58, 0.6);
+    --menu-hover: #FAF3E0;
+    
+    --accent-main: #81B29A;
+    --accent-main-hover: #6C9A82;
+    --accent-danger: #E07A5F;
+    --accent-danger-hover: #D56D52;
+    --accent-warning: #F2CC8F;
+    --accent-warning-text: #4A403A;
+    --accent-warning-hover: #E0B87A;
+    --accent-stop: #D9534F;
+    --accent-stop-hover: #C9302C;
+    --accent-debug: #95A5A6;
+    --accent-debug-hover: #7F8C8D;
+
+    --timer-start: #E07A5F;
+    --timer-start-hover: #D56D52;
+    --name-default: #81B29A;
+    --name-odd: #E07A5F;
+    --name-third: #F2CC8F;
+    --name-third-text: #4A403A;
+}
+
+body.dark-theme {
+    --bg-color: #16181A;
+    --text-main: #E2E8F0;
+    --text-muted: #94A3B8;
+    --text-subtitle: #64748B;
+    --container-bg: #1E2125;
+    --input-bg: #292D33;
+    --border-color: #373E47;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --modal-overlay: rgba(0, 0, 0, 0.75);
+    --menu-hover: #292D33;
+
+    --accent-main: #3B82F6;
+    --accent-main-hover: #2563EB;
+    --accent-danger: #EF4444; 
+    --accent-danger-hover: #DC2626;
+    --accent-warning: #334155; 
+    --accent-warning-text: #F8FAFC;
+    --accent-warning-hover: #1E293B;
+    --accent-stop: #DC2626;
+    --accent-stop-hover: #B91C1C;
+    --accent-debug: #475569;
+    --accent-debug-hover: #334155;
+
+    --timer-start: #3B82F6; 
+    --timer-start-hover: #2563EB;
+    --name-default: #3B82F6;
+    --name-odd: #60A5FA;
+    --name-third: #1E3A8A;
+    --name-third-text: #E2E8F0;
+}

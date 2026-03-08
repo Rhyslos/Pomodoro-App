@@ -1,4 +1,10 @@
 <div id="login-screen">
+    <h1>Join Pomodoro</h1>
     <input type="text" id="usernameInput" placeholder="Enter display name">
-    <button onclick="handleLogin()">Join</button>
+    <input type="password" id="passwordInput" placeholder="Enter password">
+    
+    <div class="button-group" style="flex-direction: column; gap: 10px;">
+        <button onclick="handleLogin()" style="width: 100%; margin: 0;">Login</button>
+        <button onclick="handleRegister()" class="cancel-btn" style="width: 100%; margin: 0;">Create Account</button>
+    </div>
 </div>

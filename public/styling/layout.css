@@ -1,0 +1,128 @@
+/* Layout styling */
+body {
+    font-family: 'Noto Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#app-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    width: 100%;
+}
+
+/* Header styling */
+header {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.settings-container {
+    position: relative;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 5px;
+    margin: 0;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+    background: transparent;
+    color: var(--text-main);
+    transform: scale(1.1);
+}
+
+#settings-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--container-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px var(--shadow-color);
+    min-width: 180px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+#settings-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#settings-menu li a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+#settings-menu li a:hover {
+    background-color: var(--menu-hover);
+}
+
+.menu-spacer {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 4px 0;
+}
+
+.danger-text {
+    color: var(--accent-danger) !important;
+    font-weight: 600;
+}
+
+/* Navigation styling */
+footer {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+footer a {
+    color: var(--text-subtitle);
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+footer a:hover {
+    color: var(--text-main);
+    text-decoration: underline;
+}
+
+/* Container styling */
+#login-screen, #dashboard-screen, #room-screen, .policy-container {
+    background: var(--container-bg);
+    padding: 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 12px 36px var(--shadow-color);
+    text-align: center;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+}
+
+.policy-container {
+    max-width: 650px;
+    text-align: left;
+}

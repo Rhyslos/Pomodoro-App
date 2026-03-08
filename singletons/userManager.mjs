@@ -1,55 +1,97 @@
-import { createUserID, createFriendCode } from '../modules/lib.mjs';
+import crypto from 'node:crypto';
+import { createUserID } from '../modules/lib.mjs';
 
-// User management classes
+// user management classes
 class UserManager {
     constructor() {
-        this.activeUsers = new Map();
+        this.users = new Map();
+        this.sessions = new Map();
     }
-    
-    // User creation functions
-    async createUser(username) {
+
+    // security functions
+    hashPassword(password) {
+        return crypto.createHash('sha256').update(password).digest('hex');
+    }
+
+    generateToken() {
+        return crypto.randomBytes(32).toString('hex');
+    }
+
+    // account creation functions
+    async createUser(username, password) {
+        for (const user of this.users.values()) {
+            if (user.username === username) return null;
+        }
+
         const userId = createUserID();
-        const friendCode = createFriendCode();
-            
-        const candidateUser = {
-            userId: userId,
-            friendCode: friendCode,
-            username: username,
+        const passwordHash = this.hashPassword(password);
+
+        const newUser = {
+            userId,
+            username,
+            passwordHash,
             color: null,
             createdAt: new Date().toISOString()
         };
 
-        this.activeUsers.set(userId, candidateUser);
-        return candidateUser;
+        this.users.set(userId, newUser);
+        return { userId, username, color: newUser.color };
     }
 
-    async restoreUser(userData) {
-        this.activeUsers.set(userData.userId, userData);
-        return userData;
-    }
-
-    // Data retrieval functions
-    async getUser(userId) {
-        return this.activeUsers.get(userId) || null; 
-    }
-
-    // User update functions
-    async updateUser(userId, updates) {
-        const user = this.activeUsers.get(userId);
-        if (user) {
-            // Mutate the existing object so shared references in Rooms update automatically
-            Object.assign(user, updates);
-            return user;
+    // authentication functions
+    async loginUser(username, password) {
+        const hash = this.hashPassword(password);
+        
+        for (const user of this.users.values()) {
+            if (user.username === username && user.passwordHash === hash) {
+                const token = this.generateToken();
+                this.sessions.set(token, user.userId);
+                return { token, user: { userId: user.userId, username, color: user.color } };
+            }
         }
         return null;
     }
 
-    // User deletion functions
+    // session validation functions
+    async getUserByToken(token) {
+        const userId = this.sessions.get(token);
+        if (!userId) return null;
+        
+        const user = this.users.get(userId);
+        if (!user) return null;
+        
+        return { userId: user.userId, username: user.username, color: user.color };
+    }
+
+    // data update functions
+    async updateUser(userId, updates) {
+        const user = this.users.get(userId);
+        if (!user) return null;
+
+        if (updates.username) user.username = updates.username;
+        if (updates.color) user.color = updates.color;
+        if (updates.password) user.passwordHash = this.hashPassword(updates.password);
+
+        return { userId: user.userId, username: user.username, color: user.color };
+    }
+
+    // account deletion functions
     async deleteUser(userId) {
-        this.activeUsers.delete(userId);
+        this.users.delete(userId);
+        
+        for (const [token, id] of this.sessions.entries()) {
+            if (id === userId) {
+                this.sessions.delete(token);
+            }
+        }
+    }
+    
+    // session termination functions
+    async logoutUser(token) {
+        this.sessions.delete(token);
     }
 }
 
-// Export variables
+// export variables
 const userManager = new UserManager();
 export { userManager };

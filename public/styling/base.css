@@ -1,0 +1,55 @@
+/* Global resets */
+* {
+    box-sizing: border-box;
+}
+
+/* Element styling */
+h1 {
+    color: var(--text-main);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.policy-container h1 {
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin: 0.5rem 0;
+    font-weight: 600;
+}
+
+.policy-container h2 {
+    color: var(--text-main);
+    margin-top: 1.5rem;
+}
+
+.policy-container p {
+    line-height: 1.6;
+    color: var(--text-main);
+}
+
+span {
+    color: var(--accent-danger);
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.policy-snippet {
+    background: var(--input-bg);
+    padding: 1.2rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    line-height: 1.5;
+}
+
+/* Utility styling */
+.hidden {
+    display: none !important;
+}

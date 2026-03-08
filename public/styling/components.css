@@ -1,0 +1,208 @@
+/* Input styling */
+input[type="text"], input[type="number"], input[type="password"] {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+input[type="number"] {
+    margin-bottom: 0;
+}
+
+input:focus {
+    border-color: var(--accent-danger);
+}
+
+/* Button styling */
+button {
+    background-color: var(--accent-main);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    margin: 5px;
+    font-weight: 600;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+button:hover {
+    background-color: var(--accent-main-hover);
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+.success-btn {
+    background-color: var(--accent-main);
+}
+
+.success-btn:hover {
+    background-color: var(--accent-main-hover);
+}
+
+.warning-btn {
+    background-color: var(--accent-warning);
+    color: var(--accent-warning-text);
+}
+
+.warning-btn:hover {
+    background-color: var(--accent-warning-hover);
+}
+
+.danger-btn {
+    background-color: var(--accent-danger);
+    color: white;
+}
+
+.danger-btn:hover {
+    background-color: var(--accent-danger-hover);
+}
+
+.cancel-btn {
+    background-color: transparent;
+    border: 2px solid var(--border-color);
+    color: var(--text-main);
+}
+
+.cancel-btn:hover {
+    background-color: var(--input-bg);
+}
+
+#delete-btn, #host-end-btn {
+    background-color: transparent;
+    color: var(--accent-danger);
+    border: 2px solid var(--accent-danger);
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+#delete-btn:hover, #host-end-btn:hover {
+    background-color: var(--accent-danger);
+    color: white;
+}
+
+.debug-btn {
+    background-color: var(--accent-debug);
+    color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 8px 16px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.debug-btn:hover {
+    background-color: var(--accent-debug-hover);
+}
+
+/* Modal styling */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: var(--container-bg);
+    padding: 2.5rem;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 15px 40px var(--shadow-color);
+    text-align: left;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h2 {
+    color: var(--text-main);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--accent-main);
+    flex-shrink: 0;
+}
+
+.checkbox-group label {
+    margin: 0;
+    font-weight: 400;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 2rem;
+}
+
+/* Group styling */
+.button-group {
+    margin: 1.5rem 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.join-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 1.5rem 0;
+}
+
+.join-group input {
+    margin-bottom: 0;
+    flex: 1;
+}

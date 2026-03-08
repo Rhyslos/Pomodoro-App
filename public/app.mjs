@@ -5,6 +5,11 @@ async function makeRequest(url, method = "GET", body = null, responseType = "jso
             method: method,
             headers: {}
         };
+
+        const token = localStorage.getItem('pomodoro_token');
+        if (token) {
+            options.headers["Authorization"] = `Bearer ${token}`;
+        }
         
         if (body && method !== "GET") {
             options.headers["Content-Type"] = "application/json";
@@ -43,19 +48,16 @@ window.onload = async () => {
         document.body.classList.add('dark-theme');
     }
 
-    const savedUser = localStorage.getItem('pomodoro_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        
-        const userExists = await makeRequest(`/api/users/${currentUser.userId}`);
-        if (!userExists) {
-            await makeRequest("/api/users/restore", "POST", currentUser);
-        } else if (userExists.color) {
-            currentUser.color = userExists.color;
-            localStorage.setItem('pomodoro_user', JSON.stringify(currentUser));
+    const token = localStorage.getItem('pomodoro_token');
+    if (token) {
+        const user = await makeRequest("/api/users/me");
+        if (user) {
+            currentUser = user;
+            await showDashboardScreen();
+        } else {
+            localStorage.removeItem('pomodoro_token');
+            await loadView('login');
         }
-        
-        await showDashboardScreen();
     } else {
         await loadView('login');
     }
@@ -64,15 +66,42 @@ window.onload = async () => {
 // User action functions
 async function handleLogin() {
     const username = document.getElementById('usernameInput').value;
-    if (!username) return alert("Please enter a username");
+    const password = document.getElementById('passwordInput').value;
+    if (!username || !password) return alert("Please enter both username and password");
 
-    const user = await makeRequest("/api/users", "POST", { username });
+    const response = await makeRequest("/api/users/login", "POST", { username, password });
     
-    if (user) {
-        currentUser = user;
-        localStorage.setItem('pomodoro_user', JSON.stringify(user));
+    if (response) {
+        currentUser = response.user;
+        localStorage.setItem('pomodoro_token', response.token);
         await showDashboardScreen();
     }
+}
+
+async function handleRegister() {
+    const username = document.getElementById('usernameInput').value;
+    const password = document.getElementById('passwordInput').value;
+    if (!username || !password) return alert("Please enter both username and password");
+
+    const response = await makeRequest("/api/users/register", "POST", { username, password });
+    
+    if (response) {
+        currentUser = response.user;
+        localStorage.setItem('pomodoro_token', response.token);
+        await showDashboardScreen();
+    }
+}
+
+async function logoutAccount() {
+    await makeRequest("/api/users/logout", "POST");
+    localStorage.removeItem('pomodoro_token');
+    currentUser = null;
+    currentRoomId = null;
+    currentRoomStatus = null;
+    
+    if (pollInterval) clearInterval(pollInterval);
+    toggleSettings();
+    await loadView('login');
 }
 
 function deleteAccount() {
@@ -93,9 +122,9 @@ function closeDeleteModal() {
 async function confirmDeleteAccount() {
     if (!currentUser) return;
 
-    await makeRequest(`/api/users/${currentUser.userId}`, "DELETE");
+    await makeRequest("/api/users/me", "DELETE");
     
-    localStorage.removeItem('pomodoro_user');
+    localStorage.removeItem('pomodoro_token');
     currentUser = null;
     currentRoomId = null;
     currentRoomStatus = null;
@@ -122,7 +151,6 @@ async function createSession() {
     closeCreateRoomModal();
 
     const room = await makeRequest("/api/sessions", "POST", { 
-        hostId: currentUser.userId,
         settings: {
             roomName: roomName,
             workTime: workTime,
@@ -149,7 +177,7 @@ async function joinRoom() {
     if (!codeInput || !codeInput.value) return alert("Please enter a room code");
     
     const code = codeInput.value.trim().toUpperCase();
-    const room = await makeRequest(`/api/sessions/${code}/join`, "POST", { userId: currentUser.userId });
+    const room = await makeRequest(`/api/sessions/${code}/join`, "POST");
     
     if (room) {
         currentRoomId = room.id;
@@ -161,7 +189,7 @@ async function joinRoom() {
 async function leaveSession() {
     if (!currentRoomId || !currentUser) return;
 
-    await makeRequest(`/api/sessions/${currentRoomId}/leave`, "POST", { userId: currentUser.userId });
+    await makeRequest(`/api/sessions/${currentRoomId}/leave`, "POST");
     currentRoomId = null;
     currentRoomStatus = null;
     
@@ -230,7 +258,6 @@ function changeDisplayName() {
 
     const finalName = newName.trim();
     currentUser.username = finalName;
-    localStorage.setItem('pomodoro_user', JSON.stringify(currentUser));
     
     if (currentRoomStatus && currentRoomStatus.users) {
         const userIndex = currentRoomStatus.users.findIndex(u => u.userId === currentUser.userId);
@@ -242,7 +269,18 @@ function changeDisplayName() {
     }
     
     toggleSettings();
-    makeRequest(`/api/users/${currentUser.userId}`, "PATCH", { username: finalName });
+    makeRequest("/api/users/me", "PATCH", { username: finalName });
+}
+
+function changePassword() {
+    if (!currentUser) return;
+    const newPassword = prompt("Enter a new password:");
+    if (!newPassword || newPassword.trim() === "") return;
+
+    toggleSettings();
+    makeRequest("/api/users/me", "PATCH", { password: newPassword }).then(res => {
+        if (res) alert("Password updated successfully.");
+    });
 }
 
 function triggerColorPicker() {
@@ -258,7 +296,6 @@ function changeDisplayColor(event) {
     const newColor = event.target.value;
 
     currentUser.color = newColor;
-    localStorage.setItem('pomodoro_user', JSON.stringify(currentUser));
     
     if (currentRoomStatus && currentRoomStatus.users) {
         const userIndex = currentRoomStatus.users.findIndex(u => u.userId === currentUser.userId);
@@ -266,7 +303,7 @@ function changeDisplayColor(event) {
         renderRoom(currentRoomStatus);
     }
 
-    makeRequest(`/api/users/${currentUser.userId}`, "PATCH", { color: newColor });
+    makeRequest("/api/users/me", "PATCH", { color: newColor });
 }
 
 function openCreateRoomModal() {
@@ -368,7 +405,6 @@ function adminAction(action) {
     if (!currentRoomId || !currentUser || !adminTargetUser) return;
     
     makeRequest(`/api/sessions/${currentRoomId}/admin`, "POST", {
-        hostId: currentUser.userId,
         targetId: adminTargetUser,
         action: action
     });
@@ -383,7 +419,7 @@ function toggleRoomLock() {
     currentRoomStatus.isLocked = !currentRoomStatus.isLocked;
     renderRoom(currentRoomStatus);
     
-    makeRequest(`/api/sessions/${currentRoomId}/lock`, "POST", { hostId: currentUser.userId });
+    makeRequest(`/api/sessions/${currentRoomId}/lock`, "POST");
 }
 
 async function addFakeUser() {
@@ -392,10 +428,11 @@ async function addFakeUser() {
     const randomId = Math.floor(Math.random() * 1000);
     const fakeName = `TestUser_${randomId}`;
     
-    const fakeUser = await makeRequest("/api/users", "POST", { username: fakeName });
+    const response = await makeRequest("/api/users/register", "POST", { username: fakeName, password: "password" });
     
-    if (fakeUser) {
-        await makeRequest(`/api/sessions/${currentRoomId}/join`, "POST", { userId: fakeUser.userId });
+    if (response) {
+        localStorage.setItem('pomodoro_token', response.token);
+        await makeRequest(`/api/sessions/${currentRoomId}/join`, "POST");
         updateRoomStatus(); 
     }
 }
@@ -615,6 +652,8 @@ function renderRoom(status) {
 
 // Global scope bindings
 window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.logoutAccount = logoutAccount;
 window.deleteAccount = deleteAccount;
 window.closeDeleteModal = closeDeleteModal;
 window.confirmDeleteAccount = confirmDeleteAccount;
@@ -637,6 +676,7 @@ window.toggleRoomLock = toggleRoomLock;
 window.toggleSettings = toggleSettings;
 window.toggleTheme = toggleTheme;
 window.changeDisplayName = changeDisplayName;
+window.changePassword = changePassword;
 window.triggerColorPicker = triggerColorPicker;
 window.changeDisplayColor = changeDisplayColor;
 window.loadPolicy = loadPolicy;

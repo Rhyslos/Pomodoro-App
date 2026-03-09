@@ -2,65 +2,67 @@
     <div class="room-header">
         <div style="text-align: left; display: flex; align-items: center; gap: 10px;">
             <div>
-                <h2 id="room-name-display" class="clickable-title" onclick="copyRoomCode()" title="Click to copy room code">Room Name</h2>
-                <h3 id="room-code-subtitle" class="room-code-subtitle hidden">Code: <span id="room-code-display"></span></h3>
+                <h2 id="room-name-display" class="clickable-title" onclick="copyRoomCode()">Room Name</h2>
+                <h3 id="room-code-subtitle" class="room-code-subtitle hidden"><span data-t="Code:">Code:</span> <span id="room-code-display"></span></h3>
             </div>
             <button id="lock-btn" onclick="toggleRoomLock()" class="icon-btn hidden" style="font-size: 1.2rem; margin-top: -15px;">🔓</button>
         </div>
-        <button onclick="leaveSession()" class="warning-btn" style="margin: 0;">Leave</button>
+        <button onclick="leaveSession()" class="warning-btn" style="margin: 0;" data-t="Leave">Leave</button>
     </div>
     
     <div class="timer-wrapper">
         <div id="floating-names-container"></div>
         <div class="room-info">
-            <h2>Timer: <span id="timer-display"></span></h2>
-            <h2>Status: <span id="status-display"></span></h2>
+            <h2><span data-t="Timer:">Timer:</span> <span id="timer-display"></span></h2>
+            <h2><span data-t="Status:">Status:</span> <span id="status-display"></span></h2>
         </div>
     </div>
     
     <div class="button-group timer-controls">
-        <button onclick="sendTimerAction('start')" id="primary-timer-btn" class="primary-timer-btn">Start</button>
+        <div class="button-group timer-controls">
+        <button onclick="sendTimerAction('start')" id="primary-timer-btn" class="primary-timer-btn" data-t="Start">Start</button>
         <button onclick="sendTimerAction('stop')" id="stop-timer-btn" class="stop-btn"></button>
+    </div>
     </div>
     
     <div id="tasks-container">
         <div class="tasks-header">
-            <h3>Session Tasks</h3>
+            <h3 data-t="Session Tasks">Session Tasks</h3>
             <button onclick="openTaskModal()" class="add-task-btn">+</button>
         </div>
         <div id="tasks-grid" class="tasks-grid"></div>
     </div>
 
-    <button onclick="endSession()" id="host-end-btn" class="hidden">End Session For All</button>
-    <button onclick="addFakeUser()" id="debug-fake-user-btn" class="debug-btn hidden">[TEST] Add Fake User</button>
+    <button onclick="endSession()" id="host-end-btn" class="hidden" data-t="End Session For All">End Session For All</button>
+    <button onclick="addFakeUser()" id="debug-fake-user-btn" class="debug-btn hidden" data-t="[TEST] Add Fake User">[TEST] Add Fake User</button>
 </div>
 
 <div id="task-modal" class="modal-overlay hidden">
     <div class="modal-content">
-        <h2>Add Task</h2>
+        <h2 data-t="Add Task">Add Task</h2>
         <div class="form-group">
-            <label for="task-name">Task Name</label>
-            <input type="text" id="task-name" placeholder="E.g., Read chapter 4">
+            <label for="task-name" data-t="Task Name">Task Name</label>
+            <input type="text" id="task-name" data-t-placeholder="E.g., Read chapter 4" placeholder="E.g., Read chapter 4">
         </div>
         <div class="form-group">
-            <label for="task-desc">Description</label>
-            <input type="text" id="task-desc" placeholder="Brief details about the task">
+            <label for="task-desc" data-t="Description">Description</label>
+            <input type="text" id="task-desc" data-t-placeholder="Brief details about the task" placeholder="Brief details about the task">
         </div>
         <div class="modal-actions">
-            <button onclick="closeTaskModal()" class="warning-btn">Cancel</button>
-            <button onclick="createTask()" class="success-btn">Save Task</button>
+            <button onclick="closeTaskModal()" class="warning-btn" data-t="Cancel">Cancel</button>
+            <button onclick="createTask()" class="success-btn" data-t="Save Task">Save Task</button>
         </div>
     </div>
 </div>
 
 <div id="admin-modal" class="modal-overlay hidden">
     <div class="modal-content">
-        <h2>Manage User: <span id="admin-target-name" style="color: var(--text-main);"></span></h2>
+        <h2><span data-t="Manage User:">Manage User:</span> <span id="admin-target-name" style="color: var(--text-main);"></span></h2>
         <div class="modal-actions" style="flex-direction: column; gap: 10px;">
-            <button onclick="adminAction('promote')" class="success-btn" style="width: 100%;">Promote to Host</button>
-            <button onclick="adminAction('kick')" class="warning-btn" style="width: 100%;">Kick from Lobby</button>
-            <button onclick="adminAction('ban')" class="danger-btn" style="width: 100%;">Ban from Lobby</button>
-            <button onclick="closeAdminModal()" class="cancel-btn" style="width: 100%;">Cancel</button>
+            <button onclick="adminAction('promote')" class="success-btn" style="width: 100%;" data-t="Promote to Host">Promote to Host</button>
+            <button onclick="adminAction('kick')" class="warning-btn" style="width: 100%;" data-t="Kick from Lobby">Kick from Lobby</button>
+            <button onclick="adminAction('ban')" class="danger-btn" style="width: 100%;" data-t="Ban from Lobby">Ban from Lobby</button>
+            <button onclick="closeAdminModal()" class="cancel-btn" style="width: 100%;" data-t="Cancel">Cancel</button>
         </div>
     </div>
 </div>

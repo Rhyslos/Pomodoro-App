@@ -139,6 +139,7 @@ router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
     }
 });
 
+// Routing functions
 router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const { roomId } = req.params;
@@ -146,6 +147,10 @@ router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     
     const room = sessionManager.getSession(roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
+
+    if (room.host.userId !== req.user.userId) {
+        return res.status(403).json({ error: t("Unauthorized", lang) });
+    }
 
     if (action === "start") room.startSession();
     if (action === "pause") room.pauseSession();

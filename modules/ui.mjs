@@ -9,15 +9,24 @@ export function formatTime(isoString) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// render functions
+// ui functions
 export async function loadView(viewName) {
-    const html = await makeRequest(`/api/views/${viewName}`, "GET", null, "text");
+    console.log(`[Step 1] Requesting view: ${viewName}`);
     
+    const html = await makeRequest(`/api/views/${viewName}`, "GET", null, "text");
+    console.log(`[Step 2] HTML received. Length: ${html ? html.length : 'null'}`);
+
     if (html) {
         const container = document.getElementById('app-container');
+        console.log(`[Step 3] Container found:`, !!container);
+
         if (container) {
             container.innerHTML = html;
-            translatePage(); // Run your translation sweep
+            console.log(`[Step 4] HTML injected into DOM`);
+            
+            translatePage();
+            console.log(`[Step 5] Translation complete`);
+            
             return true;
         }
     }
@@ -26,14 +35,18 @@ export async function loadView(viewName) {
 
 export async function showDashboardScreen() {
     const loaded = await loadView('dashboard');
-    if (loaded) {
+    
+    if (loaded && state.currentUser) {
         const welcomeMsg = document.getElementById('welcome-msg');
         if (welcomeMsg) {
-            welcomeMsg.innerText = `Welcome, ${state.currentUser.username}`;
+            welcomeMsg.innerText = `${t('Welcome,')} ${state.currentUser.username}`;
         }
+        
+        translatePage();
     }
 }
 
+// ui functions
 export function renderRoom(status) {
     const roomNameDisplay = document.getElementById('room-name-display');
     const roomCodeDisplay = document.getElementById('room-code-display');
@@ -82,11 +95,16 @@ export function renderRoom(status) {
     const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
     if (timerDisplay) timerDisplay.innerText = timeString;
-    if (statusDisplay) statusDisplay.innerText = status.timer.state.toUpperCase();
+    
+    // rendering functions
+    if (statusDisplay) {
+        statusDisplay.innerText = t(status.timer.state.toUpperCase()) || status.timer.state.toUpperCase();
+    }
 
+    // timer functions
     if (primaryBtn) {
         if (status.timer.state === 'idle' || status.timer.state === 'finished') {
-            primaryBtn.innerHTML = 'Start';
+            primaryBtn.innerHTML = t('Start');
             primaryBtn.onclick = () => window.sendTimerAction('start');
         } else if (status.timer.isPaused) {
             primaryBtn.innerHTML = '&#9654;'; 
@@ -97,6 +115,7 @@ export function renderRoom(status) {
         }
     }
 
+    // user rendering functions
     if (namesContainer && status.users) {
         const currentUsersStr = JSON.stringify(status.users.map(u => ({ n: u.username, c: u.color })).sort((a,b) => a.n.localeCompare(b.n)));
         
@@ -137,6 +156,7 @@ export function renderRoom(status) {
         }
     }
 
+    // task rendering functions
     const tasksContainer = document.getElementById('tasks-container');
     const tasksGrid = document.getElementById('tasks-grid');
 
@@ -151,7 +171,7 @@ export function renderRoom(status) {
                     <div class="task-user">${task.username}</div>
                     <h4 class="task-name">${task.name}</h4>
                     ${task.description ? `<p class="task-desc">${task.description}</p>` : ''}
-                    ${!task.completed && task.userId === state.currentUser.userId ? `<button class="task-complete-btn" onclick="window.completeTask('${task.id}')">Complete</button>` : ''}
+                    ${!task.completed && task.userId === state.currentUser.userId ? `<button class="task-complete-btn" onclick="window.completeTask('${task.id}')">${t('Complete')}</button>` : ''}
                     
                     <div class="task-meta">
                         <span>${formatTime(task.createdAt)}</span>
@@ -165,7 +185,7 @@ export function renderRoom(status) {
                 tasksGrid.innerHTML = tasksHTML;
             }
         } else {
-            tasksGrid.innerHTML = '<p style="color: var(--text-muted); font-size: 0.95rem; grid-column: 1 / -1; text-align: center; margin: 1rem 0;">No tasks added yet. Click the + to add your first task!</p>';
+            tasksGrid.innerHTML = `<p style="color: var(--text-muted); font-size: 0.95rem; grid-column: 1 / -1; text-align: center; margin: 1rem 0;">${t('No tasks added yet. Click the + to add your first task!')}</p>`;
         }
     }
 }
@@ -193,12 +213,13 @@ export function triggerColorPicker() {
     toggleSettings();
 }
 
+// settings functions
 export function openCreateRoomModal() {
     const modal = document.getElementById('create-room-modal');
     if (modal) {
         const nameInput = document.getElementById('setting-room-name');
         if (nameInput && state.currentUser) {
-            nameInput.value = `${state.currentUser.username}'s Room`;
+            nameInput.value = `${state.currentUser.username}${t("'s Room")}`;
         }
         modal.classList.remove('hidden');
     }

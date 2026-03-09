@@ -9,6 +9,7 @@ class UserWidget extends HTMLElement {
         this.render();
     }
 
+    // ui generation functions
     render() {
         if (this.mode === 'auth') {
             this.innerHTML = `
@@ -16,21 +17,30 @@ class UserWidget extends HTMLElement {
                     <input type="text" id="wc-username" placeholder="${t('Display Name')}">
                     <input type="password" id="wc-password" placeholder="${t('Password')}">
                 </div>
-                <button id="wc-login-btn">${t('Login')}</button>
-                <button id="wc-register-btn">${t('Create Account')}</button>
+                
+                <div class="tos-container" style="font-size: 0.8rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="wc-tos-consent">
+                    <label for="wc-tos-consent">I agree to the <a href="#" onclick="window.loadPolicy('tos'); return false;">Terms</a> and <a href="#" onclick="window.loadPolicy('privacy'); return false;">Privacy Policy</a></label>
+                </div>
+
+                <div class="auth-buttons" style="display: flex; gap: 10px;">
+                    <button id="wc-login-btn">${t('Login')}</button>
+                    <button id="wc-register-btn">${t('Create Account')}</button>
+                </div>
             `;
 
+            // user event functions
             this.querySelector('#wc-login-btn').addEventListener('click', () => {
-                const u = this.querySelector('#wc-username').value;
-                const p = this.querySelector('#wc-password').value;
-                handleLogin(u, p);
+                const user = this.querySelector('#wc-username').value;
+                const pass = this.querySelector('#wc-password').value;
+                handleLogin(user, pass);
             });
 
             this.querySelector('#wc-register-btn').addEventListener('click', () => {
-                const u = this.querySelector('#wc-username').value;
-                const p = this.querySelector('#wc-password').value;
-                const c = this.querySelector('#wc-tos').checked;
-                handleRegister(u, p, c);
+                const user = this.querySelector('#wc-username').value;
+                const pass = this.querySelector('#wc-password').value;
+                const consented = this.querySelector('#wc-tos-consent').checked;
+                handleRegister(user, pass, consented);
             });
             
         } else if (this.mode === 'profile') {

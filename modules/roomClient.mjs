@@ -1,7 +1,7 @@
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeTaskModal, closeAdminModal } from './ui.mjs';
-import { t } from '/Lang/client_i18n.mjs';
+import { t } from '/lang/client_i18n.mjs';
 
 // polling functions
 export async function updateRoomStatus() {
@@ -31,7 +31,7 @@ export function startPolling() {
 export async function createSession() {
     if (!state.currentUser) return;
 
-    const roomName = document.getElementById('setting-room-name').value || `${state.currentUser.username}'s Room`;
+    const roomName = document.getElementById('setting-room-name').value || `${state.currentUser.username}${t("'s Room")}`;
     const workTime = parseInt(document.getElementById('setting-work-time').value) || 25;
     const breakTime = parseInt(document.getElementById('setting-break-time').value) || 5;
     const longBreakTime = parseInt(document.getElementById('setting-long-break-time').value) || 15;
@@ -57,6 +57,7 @@ export async function createSession() {
     
     if (room) {
         state.currentRoomId = room.roomId;
+        sessionStorage.setItem('pomodoro_room', room.roomId);
         const loaded = await loadView('room');
         if (loaded) startPolling();
     }
@@ -73,6 +74,7 @@ export async function joinRoom() {
     
     if (room) {
         state.currentRoomId = room.id;
+        sessionStorage.setItem('pomodoro_room', room.id);
         const loaded = await loadView('room');
         if (loaded) startPolling();
     }
@@ -84,6 +86,7 @@ export async function leaveSession() {
     await makeRequest(`/api/sessions/${state.currentRoomId}/leave`, "POST");
     state.currentRoomId = null;
     state.currentRoomStatus = null;
+    sessionStorage.removeItem('pomodoro_room');
     
     if (state.pollInterval) clearInterval(state.pollInterval);
     await showDashboardScreen();
@@ -95,6 +98,7 @@ export async function endSession() {
     await makeRequest(`/api/sessions/${state.currentRoomId}`, "DELETE");
     state.currentRoomId = null;
     state.currentRoomStatus = null;
+    sessionStorage.removeItem('pomodoro_room');
     
     if (state.pollInterval) clearInterval(state.pollInterval);
     await showDashboardScreen();
@@ -128,8 +132,8 @@ export function copyRoomCode() {
     });
 }
 
-// task management functions
-export function createTask() {
+// Task management functions
+export async function createTask() {
     if (!state.currentRoomId || !state.currentUser) return;
 
     const name = document.getElementById('task-name').value.trim();
@@ -148,13 +152,13 @@ export function createTask() {
 
     closeTaskModal();
 
-    if (state.currentRoomStatus) {
+    const createdTask = await makeRequest(`/api/sessions/${state.currentRoomId}/tasks`, "POST", newTask);
+
+    if (createdTask && state.currentRoomStatus) {
         if (!state.currentRoomStatus.tasks) state.currentRoomStatus.tasks = [];
-        state.currentRoomStatus.tasks.push({ ...newTask, id: 'temp', completed: false });
+        state.currentRoomStatus.tasks.push(createdTask);
         renderRoom(state.currentRoomStatus);
     }
-
-    makeRequest(`/api/sessions/${state.currentRoomId}/tasks`, "POST", newTask);
 }
 
 export function completeTask(taskId) {

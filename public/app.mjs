@@ -1,64 +1,82 @@
+// module imports
 import './modules/userWidget.mjs';
 import { makeRequest } from './modules/network.mjs';
 import { state } from './modules/state.mjs';
-import { loadView, showDashboardScreen, toggleSettings, toggleTheme, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, closeDeleteModal, openTaskModal, closeTaskModal, closeAdminModal, loadPolicy } from './modules/ui.mjs';
+import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme } from './modules/ui.mjs';
+import { startPolling, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser } from './modules/roomClient.mjs';
 import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
-import { createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
-import { setLanguage } from '/Lang/client_i18n.mjs';
-// lifecycle functions
-window.onload = async () => {
-    const savedTheme = localStorage.getItem('pomodoro_theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
-    }
+import { setLanguage } from '/lang/client_i18n.mjs';
 
+// initialization functions
+// initialization functions
+async function initApp() {
+    console.log("App initializing..."); // Let's add a breadcrumb!
     const token = localStorage.getItem('pomodoro_token');
+    
     if (token) {
-        const user = await makeRequest("/api/users/me");
+        const user = await makeRequest('/api/users/me', 'GET');
+        
         if (user) {
             state.currentUser = user;
+            
+            const savedRoom = sessionStorage.getItem('pomodoro_room');
+            if (savedRoom) {
+                state.currentRoomId = savedRoom;
+                const loaded = await loadView('room');
+                if (loaded) {
+                    startPolling();
+                    return; 
+                }
+            }
+            
             await showDashboardScreen();
+            return;
         } else {
             localStorage.removeItem('pomodoro_token');
-            await loadView('login');
+            sessionStorage.removeItem('pomodoro_room');
         }
-    } else {
-        await loadView('login');
     }
-};
+    
+    await loadView('login');
+}
 
-// global scope bindings
-window.handleLogin = handleLogin;
-window.handleRegister = handleRegister;
-window.logoutAccount = logoutAccount;
-window.deleteAccount = deleteAccount;
+// Call the function immediately!
+initApp();
+
+// language bindings
+window.changeLanguage = setLanguage;
+
+// ui bindings
+window.toggleSettings = toggleSettings;
+window.triggerColorPicker = triggerColorPicker;
+window.openCreateRoomModal = openCreateRoomModal;
+window.closeCreateRoomModal = closeCreateRoomModal;
+window.openTaskModal = openTaskModal;
+window.closeTaskModal = closeTaskModal;
+window.closeAdminModal = closeAdminModal;
 window.closeDeleteModal = closeDeleteModal;
-window.confirmDeleteAccount = confirmDeleteAccount;
+window.toggleTheme = toggleTheme;
+
+// room bindings
 window.createSession = createSession;
 window.joinRoom = joinRoom;
 window.leaveSession = leaveSession;
 window.endSession = endSession;
 window.sendTimerAction = sendTimerAction;
 window.copyRoomCode = copyRoomCode;
-window.openCreateRoomModal = openCreateRoomModal;
-window.closeCreateRoomModal = closeCreateRoomModal;
-window.openTaskModal = openTaskModal;
-window.closeTaskModal = closeTaskModal;
 window.createTask = createTask;
 window.completeTask = completeTask;
 window.handleUserClick = handleUserClick;
-window.closeAdminModal = closeAdminModal;
 window.adminAction = adminAction;
 window.toggleRoomLock = toggleRoomLock;
-window.toggleSettings = toggleSettings;
-window.toggleTheme = toggleTheme;
+window.addFakeUser = addFakeUser;
+
+// auth bindings
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.logoutAccount = logoutAccount;
+window.deleteAccount = deleteAccount;
+window.confirmDeleteAccount = confirmDeleteAccount;
 window.changeDisplayName = changeDisplayName;
 window.changePassword = changePassword;
-window.triggerColorPicker = triggerColorPicker;
 window.changeDisplayColor = changeDisplayColor;
-window.loadPolicy = loadPolicy;
-window.goHome = goHome;
-window.addFakeUser = addFakeUser;
-window.changeLanguage = (lang) => {
-    setLanguage(lang);
-};

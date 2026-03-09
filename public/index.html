@@ -4,60 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro App</title>
-    <link rel="stylesheet" href="styling.css">
+    <link rel="stylesheet" href="./styling/main.css">
     <script type="module" src="app.mjs" defer></script>
 </head>
 <body>
     <header>
-    <div class="settings-container">
-        <button onclick="toggleSettings()" class="icon-btn" aria-label="Menu">&#9776;</button>
-        
-        <div id="settings-menu" class="hidden">
-            <ul style="list-style: none; padding: 0; margin: 0;">
-                <li><a href="#" onclick="toggleTheme(); return false;" data-t="Toggle Theme">Toggle Theme</a></li>
-                <li><a href="#" onclick="triggerColorPicker(); return false;" data-t="Set Name Color">Set Name Color</a></li>
-                
-                <li class="menu-spacer"></li>                
-                <li class="menu-label" data-t="Language / Språk / 언어">Language / Språk / 언어</li>
-                <li><a href="#" onclick="changeLanguage('en'); return false;">🇺🇸 English</a></li>
-                <li><a href="#" onclick="changeLanguage('no'); return false;">🇳🇴 Norsk</a></li>
-                <li><a href="#" onclick="changeLanguage('ko'); return false;">🇰🇷 한국어</a></li>
-                
-                <li class="menu-spacer"></li>
-                <user-widget mode="profile"></user-widget>
-                
-                <li class="menu-spacer"></li>
-                <li><a href="#" onclick="logoutAccount(); return false;" data-t="Logout">Logout</a></li>
-            </ul>
-        </div>
+        <div class="settings-container">
+            <button onclick="toggleSettings()" class="icon-btn" aria-label="Menu">&#9776;</button>
+            
+            <div id="settings-menu" class="hidden">
+                <ul>
+                    <li><a href="#" onclick="toggleTheme(); return false;" data-t="Toggle Theme">Toggle Theme</a></li>
+                    <li><a href="#" onclick="triggerColorPicker(); return false;" data-t="Set Name Color">Set Name Color</a></li>
+                    
+                    <li class="menu-spacer"></li>
+                    <li class="menu-label" data-t="Language / Språk / 언어">Language / Språk / 언어</li>
+                    <li><a href="#" onclick="changeLanguage('en'); return false;"><img src="https://flagcdn.com/gb.svg" class="flag-icon" width="24" height="18" alt="GB" style="object-fit: cover; border-radius: 2px;"> English</a></li>
+                    <li><a href="#" onclick="changeLanguage('no'); return false;"><img src="https://flagcdn.com/no.svg" class="flag-icon" width="24" height="18" alt="NO" style="object-fit: cover; border-radius: 2px;"> Norsk</a></li>
+                    <li><a href="#" onclick="changeLanguage('ko'); return false;"><img src="https://flagcdn.com/kr.svg" class="flag-icon" width="24" height="18" alt="KR" style="object-fit: cover; border-radius: 2px;"> 한국어</a></li>
+                    
+                    <li class="menu-spacer"></li>
+                    <user-widget mode="profile"></user-widget>
+                    
+                    <li class="menu-spacer"></li>
+                    <li><a href="#" onclick="logoutAccount(); return false;" data-t="Logout">Logout</a></li>
+                </ul>
+            </div>
             <input type="color" id="name-color-picker" class="hidden" onchange="changeDisplayColor(event)">
         </div>
     </header>
 
-    <div id="app-container"></div>
+    <main id="app-container"></main>
 
     <div id="delete-account-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2>Delete Account?</h2>
-            <p>Are you sure you want to permanently delete your account?</p>
+            <h2 data-t="Delete Account?">Delete Account?</h2>
+            <p data-t="Are you sure you want to permanently delete your account?">Are you sure you want to permanently delete your account?</p>
             
             <div class="policy-snippet">
-                <strong>Privacy Policy Notice:</strong><br>
-                Deleting your account will immediately erase your display name, password hash, and session data from your device and drop your active connections. Anonymous telemetry regarding room interactions remains to maintain room integrity, but cannot be traced back to you.
+                <strong data-t="Privacy Policy Notice:">Privacy Policy Notice:</strong><br>
+                <span data-t="deletion_policy_text">Deleting your account will immediately erase your data.</span>
             </div>
             
-            <p style="font-size: 0.9rem; margin-bottom: 0;">You can always come back and create a new account at any time!</p>
-            
             <div class="modal-actions">
-                <button onclick="closeDeleteModal()" class="warning-btn">Cancel</button>
-                <button onclick="confirmDeleteAccount()" class="danger-btn">Delete</button>
+                <button onclick="closeDeleteModal()" class="warning-btn" data-t="Cancel">Cancel</button>
+                <button onclick="confirmDeleteAccount()" class="danger-btn" data-t="Delete">Delete</button>
             </div>
         </div>
     </div>
 
     <footer>
-        <a href="#" onclick="window.loadPolicy('privacy'); return false;">Privacy Policy</a>
-        <a href="#" onclick="window.loadPolicy('tos'); return false;">Terms of Service</a>
+        <a href="#" onclick="window.loadPolicy('privacy'); return false;" data-t="Privacy Policy">Privacy Policy</a>
+        <a href="#" onclick="window.loadPolicy('tos'); return false;" data-t="Terms of Service">Terms of Service</a>
     </footer>
 </body>
 </html>

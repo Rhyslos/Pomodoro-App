@@ -9,8 +9,12 @@ class UserManager {
     }
 
     // Security functions
-    hashPassword(password) {
-        return crypto.createHash('sha256').update(password).digest('hex');
+    hashPassword(password, salt) {
+        return crypto.scryptSync(password, salt, 64).toString('hex');
+    }
+
+    generateSalt() {
+        return crypto.randomBytes(16).toString('hex');
     }
 
     generateToken() {
@@ -24,12 +28,14 @@ class UserManager {
         }
 
         const userId = createUserID();
-        const passwordHash = this.hashPassword(password);
+        const salt = this.generateSalt();
+        const passwordHash = this.hashPassword(password, salt);
 
         const newUser = {
             userId,
             username,
             passwordHash,
+            salt,
             color: null,
             createdAt: new Date().toISOString()
         };
@@ -40,13 +46,18 @@ class UserManager {
 
     // Authentication functions
     async loginUser(username, password) {
-        const hash = this.hashPassword(password);
-        
         for (const user of this.users.values()) {
-            if (user.username === username && user.passwordHash === hash) {
-                const token = this.generateToken();
-                this.sessions.set(token, user.userId);
-                return { token, user: { userId: user.userId, username, color: user.color } };
+            if (user.username === username) {
+                const inputHash = this.hashPassword(password, user.salt);
+                
+                const storedHashBuffer = Buffer.from(user.passwordHash, 'hex');
+                const inputHashBuffer = Buffer.from(inputHash, 'hex');
+                
+                if (storedHashBuffer.length === inputHashBuffer.length && crypto.timingSafeEqual(storedHashBuffer, inputHashBuffer)) {
+                    const token = this.generateToken();
+                    this.sessions.set(token, user.userId);
+                    return { token, user: { userId: user.userId, username, color: user.color } };
+                }
             }
         }
         return null;
@@ -70,7 +81,10 @@ class UserManager {
 
         if (updates.username) user.username = updates.username;
         if (updates.color) user.color = updates.color;
-        if (updates.password) user.passwordHash = this.hashPassword(updates.password);
+        if (updates.password) {
+            user.salt = this.generateSalt();
+            user.passwordHash = this.hashPassword(updates.password, user.salt);
+        }
 
         return { userId: user.userId, username: user.username, color: user.color };
     }

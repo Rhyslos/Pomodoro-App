@@ -1,23 +1,23 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomInt, randomUUID } from "node:crypto";
 
 // Room generation functions
-export function createRoomCode(){
-    let RoomCode    = "";
-    let characters  = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789"
+export function createRoomCode() {
+    let RoomCode = "";
+    const characters = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789";
 
-    for ( let i = 0; i < 6; i++ ) {
-        RoomCode += characters.charAt(Math.floor(Math.random() * characters.length));
+    for (let i = 0; i < 6; i++) {
+        RoomCode += characters.charAt(randomInt(0, characters.length));
 
-        if(i === 2){
-            RoomCode += "-"
+        if (i === 2) {
+            RoomCode += "-";
         }
     }
     return RoomCode;
 }
 
 // ID generation functions
-export function createUserID(){
-    let userID = crypto.randomUUID();
+export function createUserID() {
+    let userID = randomUUID();
     return userID;
 }
 

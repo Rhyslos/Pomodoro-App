@@ -7,13 +7,9 @@ export async function makeRequest(url, method = "GET", body = null, responseType
             method: method,
             headers: {
                 "Accept-Language": getBrowserLang()
-            }
+            },
+            credentials: "same-origin" 
         };
-
-        const token = localStorage.getItem('pomodoro_token');
-        if (token) {
-            options.headers["Authorization"] = `Bearer ${token}`;
-        }
         
         if (body && method !== "GET") {
             options.headers["Content-Type"] = "application/json";

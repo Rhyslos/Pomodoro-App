@@ -2,7 +2,7 @@
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { showDashboardScreen, loadView, toggleSettings, closeDeleteModal, renderRoom } from './ui.mjs';
-import { t } from '/Lang/client_i18n.mjs';
+import { t } from '/lang/client_i18n.mjs';
 import { sanitizeString } from './sanitize.mjs';
 
 // authentication functions
@@ -16,7 +16,6 @@ export async function handleLogin(username, password) {
     
     if (response) {
         state.currentUser = response.user;
-        localStorage.setItem('pomodoro_token', response.token);
         await showDashboardScreen();
     }
 }
@@ -32,7 +31,6 @@ export async function handleRegister(username, password, hasConsented) {
     
     if (response) {
         state.currentUser = response.user;
-        localStorage.setItem('pomodoro_token', response.token);
         await showDashboardScreen();
     }
 }
@@ -40,7 +38,7 @@ export async function handleRegister(username, password, hasConsented) {
 // account lifecycle functions
 export async function logoutAccount() {
     await makeRequest("/api/users/logout", "POST");
-    localStorage.removeItem('pomodoro_token');
+    
     state.currentUser = null;
     state.currentRoomId = null;
     state.currentRoomStatus = null;
@@ -65,7 +63,6 @@ export async function confirmDeleteAccount() {
 
     await makeRequest("/api/users/me", "DELETE");
     
-    localStorage.removeItem('pomodoro_token');
     state.currentUser = null;
     state.currentRoomId = null;
     state.currentRoomStatus = null;

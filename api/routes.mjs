@@ -1,4 +1,4 @@
-// Initialization functions
+// initialization functions
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
@@ -10,10 +10,59 @@ import { sanitizeString, sanitizePayload } from '../modules/sanitize.mjs';
 
 const router = express.Router();
 
-// Middleware functions
+// rate limiting variables
+const authAttempts = new Map();
+
+// middleware functions
+const parseCookies = (request) => {
+    const list = {};
+    const cookieHeader = request.headers?.cookie;
+    if (!cookieHeader) return list;
+
+    cookieHeader.split(';').forEach(cookie => {
+        let [name, ...rest] = cookie.split('=');
+        name = name?.trim();
+        if (!name) return;
+        const value = rest.join('=').trim();
+        if (!value) return;
+        list[name] = decodeURIComponent(value);
+    });
+    return list;
+};
+
+const authRateLimiter = (req, res, next) => {
+    const lang = getLang(req.headers['accept-language']);
+    const ip = req.ip;
+    const now = Date.now();
+    const windowMs = 900000; 
+    const maxAttempts = 5;
+
+    if (!authAttempts.has(ip)) {
+        authAttempts.set(ip, { count: 1, firstAttempt: now });
+        return next();
+    }
+
+    const record = authAttempts.get(ip);
+
+    if (now - record.firstAttempt > windowMs) {
+        authAttempts.set(ip, { count: 1, firstAttempt: now });
+        return next();
+    }
+
+    record.count++;
+
+    if (record.count > maxAttempts) {
+        return res.status(429).json({ error: t("Too many attempts. Please try again later.", lang) });
+    }
+
+    next();
+};
+
 const requireAuth = async (req, res, next) => {
     const lang = getLang(req.headers['accept-language']);
-    const token = req.headers.authorization?.split(' ')[1];
+    
+    const cookies = parseCookies(req);
+    const token = cookies.pomodoro_token || req.headers.authorization?.split(' ')[1];
     
     if (!token) return res.status(401).json({ error: t("Unauthorized", lang) });
 
@@ -49,8 +98,8 @@ router.get('/views/:viewName', async (req, res) => {
     }
 });
 
-// User routing functions
-router.post('/users/register', async (req, res) => {
+// user routing functions
+router.post('/users/register', authRateLimiter, async (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     try {
         const username = sanitizeString(req.body.username);
@@ -62,13 +111,21 @@ router.post('/users/register', async (req, res) => {
         if (!user) return res.status(409).json({ error: t("Username taken", lang) });
 
         const session = await userManager.loginUser(username, password);
-        res.status(201).json(session);
+        
+        res.cookie('pomodoro_token', session.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 86400000
+        });
+        
+        res.status(201).json({ user: session.user });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.post('/users/login', async (req, res) => {
+router.post('/users/login', authRateLimiter, async (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     try {
         const username = sanitizeString(req.body.username);
@@ -76,7 +133,17 @@ router.post('/users/login', async (req, res) => {
         const session = await userManager.loginUser(username, password);
         
         if (!session) return res.status(401).json({ error: t("Invalid credentials", lang) });
-        res.status(200).json(session);
+        
+        authAttempts.delete(req.ip);
+        
+        res.cookie('pomodoro_token', session.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 86400000
+        });
+
+        res.status(200).json({ user: session.user });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -84,6 +151,7 @@ router.post('/users/login', async (req, res) => {
 
 router.post('/users/logout', requireAuth, async (req, res) => {
     await userManager.logoutUser(req.token);
+    res.clearCookie('pomodoro_token');
     res.status(200).json({ message: "Logged out" });
 });
 
@@ -104,13 +172,14 @@ router.patch('/users/me', requireAuth, async (req, res) => {
 router.delete('/users/me', requireAuth, async (req, res) => {
     try {
         await userManager.deleteUser(req.user.userId);
+        res.clearCookie('pomodoro_token');
         res.status(200).json({ message: "Account deleted" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Session routing functions
+// session routing functions
 router.post('/sessions', requireAuth, async (req, res) => {
     const safeSettings = sanitizePayload(req.body.settings);
     const room = await sessionManager.createSession(req.user, safeSettings); 
@@ -120,11 +189,10 @@ router.post('/sessions', requireAuth, async (req, res) => {
 router.get('/sessions/:roomId', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
-    
     if (!room) {
         return res.status(404).json({ error: t("Room not found", lang) });
     }
-
+    
     const isMember = Array.from(room.users).some(user => user.userId === req.user.userId);
     if (!isMember) {
         return res.status(403).json({ error: t("Unauthorized", lang) });
@@ -164,7 +232,7 @@ router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
     }
 });
 
-// Routing functions
+// routing functions
 router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const { roomId } = req.params;
@@ -188,7 +256,7 @@ router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     res.json(room.getStatus());
 });
 
-// Task routing functions
+// task routing functions
 router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
@@ -224,7 +292,7 @@ router.patch('/sessions/:roomId/tasks/:taskId', requireAuth, (req, res) => {
     res.status(200).json({ message: "Task completed" });
 });
 
-// Admin routing functions
+// admin routing functions
 router.post('/sessions/:roomId/lock', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
@@ -249,5 +317,5 @@ router.post('/sessions/:roomId/admin', requireAuth, (req, res) => {
     res.status(200).json({ message: "Admin action executed" });
 });
 
-// Export functions
+// export functions
 export default router;

@@ -4,7 +4,6 @@ import { handleLogin, handleRegister, deleteAccount, changeDisplayName, changePa
 // component functions
 class UserWidget extends HTMLElement {
     connectedCallback() {
-        console.log("User Widget successfully loaded and attached to DOM!");
         this.mode = this.getAttribute('mode') || 'auth';
         this.render();
     }
@@ -18,12 +17,12 @@ class UserWidget extends HTMLElement {
                     <input type="password" id="wc-password" placeholder="${t('Password')}">
                 </div>
                 
-                <div class="tos-container" style="font-size: 0.8rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <div class="tos-container">
                     <input type="checkbox" id="wc-tos-consent">
                     <label for="wc-tos-consent">I agree to the <a href="#" onclick="window.loadPolicy('tos'); return false;">Terms</a> and <a href="#" onclick="window.loadPolicy('privacy'); return false;">Privacy Policy</a></label>
                 </div>
 
-                <div class="auth-buttons" style="display: flex; gap: 10px;">
+                <div class="auth-buttons">
                     <button id="wc-login-btn">${t('Login')}</button>
                     <button id="wc-register-btn">${t('Create Account')}</button>
                 </div>
@@ -50,6 +49,7 @@ class UserWidget extends HTMLElement {
                 <li><a href="#" id="wc-delete" class="danger-text">Delete Account</a></li>
             `;
 
+            // user event functions
             this.querySelector('#wc-edit-name').addEventListener('click', (e) => { 
                 e.preventDefault(); 
                 changeDisplayName(); 

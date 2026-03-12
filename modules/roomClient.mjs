@@ -135,7 +135,7 @@ export function copyRoomCode() {
     });
 }
 
-// Task management functions
+// task management functions
 export async function createTask() {
     if (!state.currentRoomId || !state.currentUser) return;
 
@@ -223,21 +223,10 @@ export function toggleRoomLock() {
     makeRequest(`/api/sessions/${state.currentRoomId}/lock`, "POST");
 }
 
+// debug functions
 export async function addFakeUser() {
     if (!state.currentRoomId) return;
-    
-    const randomId = Math.floor(Math.random() * 1000);
-    const fakeName = sanitizeString(`TestUser_${randomId}`);
-    
-    const response = await makeRequest("/api/users/register", "POST", { username: fakeName, password: "password" });
-    
-    if (response) {
-        const originalToken = localStorage.getItem('pomodoro_token');
-        localStorage.setItem('pomodoro_token', response.token);
-        await makeRequest(`/api/sessions/${state.currentRoomId}/join`, "POST");
-        localStorage.setItem('pomodoro_token', originalToken);
-        updateRoomStatus(); 
-    }
+    alert(t("Debug feature disabled: Client-side fake user generation is not compatible with HTTP-only cookies."));
 }
 
 // navigation functions

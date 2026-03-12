@@ -9,37 +9,30 @@ import { setLanguage } from '/lang/client_i18n.mjs';
 
 // initialization functions
 async function initApp() {
-    console.log("App initializing..."); // Let's add a breadcrumb!
-    const token = localStorage.getItem('pomodoro_token');
+    const user = await makeRequest('/api/users/me', 'GET');
     
-    if (token) {
-        const user = await makeRequest('/api/users/me', 'GET');
+    if (user) {
+        state.currentUser = user;
         
-        if (user) {
-            state.currentUser = user;
-            
-            const savedRoom = sessionStorage.getItem('pomodoro_room');
-            if (savedRoom) {
-                state.currentRoomId = savedRoom;
-                const loaded = await loadView('room');
-                if (loaded) {
-                    startPolling();
-                    return; 
-                }
+        const savedRoom = sessionStorage.getItem('pomodoro_room');
+        if (savedRoom) {
+            state.currentRoomId = savedRoom;
+            const loaded = await loadView('room');
+            if (loaded) {
+                startPolling();
+                return; 
             }
-            
-            await showDashboardScreen();
-            return;
-        } else {
-            localStorage.removeItem('pomodoro_token');
-            sessionStorage.removeItem('pomodoro_room');
         }
+        
+        await showDashboardScreen();
+        return;
+    } else {
+        sessionStorage.removeItem('pomodoro_room');
     }
     
     await loadView('login');
 }
 
-// Call the function immediately!
 initApp();
 
 // language bindings

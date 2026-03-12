@@ -23,6 +23,10 @@ const dictionary = {
     "Change Password": { en: "Change Password", no: "Endre passord", ko: "비밀번호 변경" },
     "Delete Account": { en: "Delete Account", no: "Slett konto", ko: "계정 삭제" },
 
+    // menu variables
+    "Customization": { en: "Customization", no: "Tilpasning", ko: "사용자 지정" },
+    "User Options": { en: "User Options", no: "Brukervalg", ko: "사용자 옵션" },
+
     // settings variables
     "Toggle Theme": { en: "Toggle Theme", no: "Bytt tema", ko: "테마 변경" },
     "Set Name Color": { en: "Set Name Color", no: "Velg farge på navn", ko: "이름 색상 설정" },

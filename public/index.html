@@ -12,21 +12,21 @@
         <div class="settings-container">
             <button onclick="toggleSettings()" class="icon-btn" aria-label="Menu">&#9776;</button>
             
-            <div id="settings-menu" class="hidden">
+           <div id="settings-menu" class="hidden">
                 <ul>
+                    <li class="menu-label" data-t="Customization">Customization</li>
                     <li><a href="#" onclick="toggleTheme(); return false;" data-t="Toggle Theme">Toggle Theme</a></li>
                     <li><a href="#" onclick="triggerColorPicker(); return false;" data-t="Set Name Color">Set Name Color</a></li>
                     
                     <li class="menu-spacer"></li>
                     <li class="menu-label" data-t="Language / Språk / 언어">Language / Språk / 언어</li>
-                    <li><a href="#" onclick="changeLanguage('en'); return false;"><img src="https://flagcdn.com/gb.svg" class="flag-icon" width="24" height="18" alt="GB" style="object-fit: cover; border-radius: 2px;"> English</a></li>
-                    <li><a href="#" onclick="changeLanguage('no'); return false;"><img src="https://flagcdn.com/no.svg" class="flag-icon" width="24" height="18" alt="NO" style="object-fit: cover; border-radius: 2px;"> Norsk</a></li>
-                    <li><a href="#" onclick="changeLanguage('ko'); return false;"><img src="https://flagcdn.com/kr.svg" class="flag-icon" width="24" height="18" alt="KR" style="object-fit: cover; border-radius: 2px;"> 한국어</a></li>
+                    <li><a href="#" onclick="changeLanguage('en'); return false;"><img src="https://flagcdn.com/gb.svg" class="flag-icon" alt="GB"> English</a></li>
+                    <li><a href="#" onclick="changeLanguage('no'); return false;"><img src="https://flagcdn.com/no.svg" class="flag-icon" alt="NO"> Norsk</a></li>
+                    <li><a href="#" onclick="changeLanguage('ko'); return false;"><img src="https://flagcdn.com/kr.svg" class="flag-icon" alt="KR"> 한국어</a></li>
                     
                     <li class="menu-spacer"></li>
+                    <li class="menu-label" data-t="User Options">User Options</li>
                     <user-widget mode="profile"></user-widget>
-                    
-                    <li class="menu-spacer"></li>
                     <li><a href="#" onclick="logoutAccount(); return false;" data-t="Logout">Logout</a></li>
                 </ul>
             </div>

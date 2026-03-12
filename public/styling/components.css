@@ -1,4 +1,4 @@
-/* Input styling */
+/* input styling */
 input[type="text"], input[type="number"], input[type="password"] {
     width: 100%;
     padding: 14px;
@@ -21,7 +21,7 @@ input:focus {
     border-color: var(--accent-danger);
 }
 
-/* Button styling */
+/* button styling */
 button {
     background-color: var(--accent-main);
     color: white;
@@ -42,14 +42,6 @@ button:hover {
 
 button:active {
     transform: scale(0.97);
-}
-
-.success-btn {
-    background-color: var(--accent-main);
-}
-
-.success-btn:hover {
-    background-color: var(--accent-main-hover);
 }
 
 .warning-btn {
@@ -108,7 +100,7 @@ button:active {
     background-color: var(--accent-debug-hover);
 }
 
-/* Modal styling */
+/* modal styling */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -138,6 +130,7 @@ button:active {
     margin-bottom: 1.5rem;
 }
 
+/* layout grid styling */
 .modal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -145,6 +138,7 @@ button:active {
     margin-bottom: 1.5rem;
 }
 
+/* input group styling */
 .form-group {
     margin-bottom: 0.5rem;
 }
@@ -157,6 +151,7 @@ button:active {
     color: var(--text-main);
 }
 
+/* checkbox styling */
 .checkbox-group {
     display: flex;
     align-items: center;
@@ -179,6 +174,7 @@ button:active {
     cursor: pointer;
 }
 
+/* action group styling */
 .modal-actions {
     display: flex;
     justify-content: flex-end;
@@ -186,7 +182,6 @@ button:active {
     margin-top: 2rem;
 }
 
-/* Group styling */
 .button-group {
     margin: 1.5rem 0;
     display: flex;
@@ -207,7 +202,7 @@ button:active {
     flex: 1;
 }
 
-/* component styling fixes */
+/* component styling */
 user-widget {
     display: block;
     width: 100%;

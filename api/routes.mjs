@@ -317,5 +317,32 @@ router.post('/sessions/:roomId/admin', requireAuth, (req, res) => {
     res.status(200).json({ message: "Admin action executed" });
 });
 
+// debug routing functions
+router.post('/sessions/:roomId/debug/fake-user', requireAuth, async (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
+    const room = sessionManager.getSession(req.params.roomId);
+
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
+    if (!room.settings.debugMode) return res.status(403).json({ error: t("Debug mode is disabled", lang) });
+
+    try {
+        const randomId = Math.floor(Math.random() * 1000);
+        const fakeName = `TestUser_${randomId}`;
+        
+        const fakeUser = await userManager.createUser(fakeName, "password");
+        if (!fakeUser) return res.status(500).json({ error: t("Failed to generate user", lang) });
+
+        room.join({ 
+            userId: fakeUser.userId, 
+            username: fakeUser.username, 
+            color: fakeUser.color 
+        });
+        
+        res.status(201).json({ message: "Fake user injected" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // export functions
 export default router;

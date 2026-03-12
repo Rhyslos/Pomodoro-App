@@ -226,7 +226,12 @@ export function toggleRoomLock() {
 // debug functions
 export async function addFakeUser() {
     if (!state.currentRoomId) return;
-    alert(t("Debug feature disabled: Client-side fake user generation is not compatible with HTTP-only cookies."));
+    
+    const response = await makeRequest(`/api/sessions/${state.currentRoomId}/debug/fake-user`, "POST");
+    
+    if (response) {
+        updateRoomStatus(); 
+    }
 }
 
 // navigation functions

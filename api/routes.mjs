@@ -105,12 +105,19 @@ router.post('/sessions', requireAuth, async (req, res) => {
     res.status(201).json({ roomId: room.id });
 });
 
-router.get('/sessions/:roomId', (req, res) => {
+router.get('/sessions/:roomId', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
+    
     if (!room) {
         return res.status(404).json({ error: t("Room not found", lang) });
     }
+
+    const isMember = Array.from(room.users).some(user => user.userId === req.user.userId);
+    if (!isMember) {
+        return res.status(403).json({ error: t("Unauthorized", lang) });
+    }
+
     res.json(room.getStatus());
 });
 

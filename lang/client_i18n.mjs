@@ -11,6 +11,18 @@ const dictionary = {
     "Enter new display name:": { en: "Enter new display name:", no: "Skriv inn nytt visningsnavn:", ko: "새 표시 이름을 입력하십시오:" },
     "Enter a new password:": { en: "Enter a new password:", no: "Skriv inn nytt passord:", ko: "새 비밀번호를 입력하십시오:" },
 
+    // account deletion variables
+    "Delete Account?": { en: "Delete Account?", no: "Slett konto?", ko: "계정 삭제?" },
+    "Are you sure you want to permanently delete your account?": { en: "Are you sure you want to permanently delete your account?", no: "Er du sikker på at du vil slette kontoen din permanent?", ko: "계정을 영구적으로 삭제하시겠습니까?" },
+    "Privacy Policy Notice:": { en: "Privacy Policy Notice:", no: "Merknad om personvern:", ko: "개인정보 보호정책 안내:" },
+    "deletion_policy_text": { en: "Deleting your account will immediately erase your data.", no: "Sletting av kontoen din vil umiddelbart fjerne dataene dine.", ko: "계정을 삭제하면 데이터가 즉시 지워집니다." },
+    "Delete": { en: "Delete", no: "Slett", ko: "삭제" },
+
+    // profile variables
+    "Change Name": { en: "Change Name", no: "Endre navn", ko: "이름 변경" },
+    "Change Password": { en: "Change Password", no: "Endre passord", ko: "비밀번호 변경" },
+    "Delete Account": { en: "Delete Account", no: "Slett konto", ko: "계정 삭제" },
+
     // settings variables
     "Toggle Theme": { en: "Toggle Theme", no: "Bytt tema", ko: "테마 변경" },
     "Set Name Color": { en: "Set Name Color", no: "Velg farge på navn", ko: "이름 색상 설정" },

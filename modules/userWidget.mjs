@@ -44,9 +44,9 @@ class UserWidget extends HTMLElement {
             
         } else if (this.mode === 'profile') {
             this.innerHTML = `
-                <li><a href="#" id="wc-edit-name">Change Name</a></li>
-                <li><a href="#" id="wc-edit-pass">Change Password</a></li>
-                <li><a href="#" id="wc-delete" class="danger-text">Delete Account</a></li>
+                <li><a href="#" id="wc-edit-name" data-t="Change Name">${t('Change Name')}</a></li>
+                <li><a href="#" id="wc-edit-pass" data-t="Change Password">${t('Change Password')}</a></li>
+                <li><a href="#" id="wc-delete" class="danger-text" data-t="Delete Account">${t('Delete Account')}</a></li>
             `;
 
             // user event functions

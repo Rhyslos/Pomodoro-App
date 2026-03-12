@@ -25,11 +25,23 @@ const requireAuth = async (req, res, next) => {
     next();
 };
 
-// View routing functions
+// view routing functions
 router.get('/views/:viewName', async (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     try {
-        const viewPath = path.join(process.cwd(), 'views', `${req.params.viewName}.html`);
+        const viewName = req.params.viewName;
+        
+        if (!/^[a-zA-Z0-9_-]+$/.test(viewName)) {
+            return res.status(400).send(t("Invalid view name", lang));
+        }
+
+        const baseViewsDir = path.join(process.cwd(), 'views');
+        const viewPath = path.join(baseViewsDir, `${viewName}.html`);
+        
+        if (!viewPath.startsWith(baseViewsDir)) {
+            return res.status(403).send(t("Forbidden", lang));
+        }
+
         const html = await fs.readFile(viewPath, 'utf-8');
         res.send(html);
     } catch (error) {

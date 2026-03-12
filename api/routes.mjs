@@ -2,6 +2,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'node:crypto';
 import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
 import { t, getLang } from '../lang/server_i18n.mjs';
@@ -177,11 +178,16 @@ router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
     const safeBody = sanitizePayload(req.body);
     
     const task = { 
-        ...safeBody, 
-        id: Date.now().toString(), 
+        id: crypto.randomUUID(), 
+        userId: req.user.userId,
+        username: req.user.username,
+        color: req.user.color,
+        name: safeBody.name,
+        description: safeBody.description,
         completed: false,
         createdAt: new Date().toISOString()
     };
+    
     room.addTask(task);
     res.status(201).json(task);
 });
@@ -190,6 +196,10 @@ router.patch('/sessions/:roomId/tasks/:taskId', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
+
+    const task = room.tasks.find(t => t.id === req.params.taskId);
+    if (!task) return res.status(404).json({ error: t("Task not found", lang) });
+    if (task.userId !== req.user.userId) return res.status(403).json({ error: t("Unauthorized", lang) });
 
     room.completeTask(req.params.taskId);
     res.status(200).json({ message: "Task completed" });

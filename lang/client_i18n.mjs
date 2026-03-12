@@ -90,7 +90,9 @@ export function getBrowserLang() {
     const savedLang = localStorage.getItem('pomodoro_lang');
     if (savedLang && ['en', 'no', 'ko'].includes(savedLang)) return savedLang;
 
-    const lang = navigator.language.slice(0, 2);
+    let lang = navigator.language.slice(0, 2);
+    if (lang === 'nb' || lang === 'nn') lang = 'no';
+    
     if (['en', 'no', 'ko'].includes(lang)) return lang;
     return 'en';
 }

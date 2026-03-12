@@ -22,7 +22,13 @@ const dictionary = {
 // language functions
 export function getLang(header) {
     if (!header) return 'en';
-    const langs = header.split(',').map(l => l.split(';')[0].trim().slice(0, 2));
+    
+    const langs = header.split(',').map(l => {
+        let code = l.split(';')[0].trim().slice(0, 2);
+        if (code === 'nb' || code === 'nn') code = 'no';
+        return code;
+    });
+
     for (let l of langs) {
         if (['en', 'no', 'ko'].includes(l)) return l;
     }

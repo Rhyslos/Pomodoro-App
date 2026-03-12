@@ -8,7 +8,15 @@ const dictionary = {
     "User not found": { en: "User not found", no: "Bruker ikke funnet", ko: "사용자를 찾을 수 없음" },
     "Room not found": { en: "Room not found", no: "Rom ikke funnet", ko: "방을 찾을 수 없음" },
     "Room is locked or full": { en: "Room is locked or full", no: "Rommet er låst eller fullt", ko: "방이 잠겨 있거나 가득 찼습니다" },
-    "View not found": { en: "View not found", no: "Visning ikke funnet", ko: "뷰를 찾을 수 없음" }
+    "View not found": { en: "View not found", no: "Visning ikke funnet", ko: "뷰를 찾을 수 없음" },
+    
+    // security variables
+    "Too many attempts. Please try again later.": { en: "Too many attempts. Please try again later.", no: "For mange forsøk. Vennligst prøv igjen senere.", ko: "시도 횟수가 너무 많습니다. 나중에 다시 시도해 주세요." },
+    "Invalid view name": { en: "Invalid view name", no: "Ugyldig visningsnavn", ko: "잘못된 뷰 이름" },
+    "Forbidden": { en: "Forbidden", no: "Forbudt", ko: "금지됨" },
+    "Task not found": { en: "Task not found", no: "Oppgave ikke funnet", ko: "작업을 찾을 수 없음" },
+    "Debug mode is disabled": { en: "Debug mode is disabled", no: "Feilsøkingsmodus er deaktivert", ko: "디버그 모드가 비활성화되었습니다" },
+    "Failed to generate user": { en: "Failed to generate user", no: "Kunne ikke generere bruker", ko: "사용자 생성 실패" }
 };
 
 // language functions

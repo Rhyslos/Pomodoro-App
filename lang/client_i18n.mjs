@@ -74,6 +74,7 @@ const dictionary = {
     "Task name is required": { en: "Task name is required", no: "Oppgavenavn er påkrevd", ko: "작업 이름이 필요합니다" },
     "Room code copied to clipboard!": { en: "Room code copied to clipboard!", no: "Romkode kopiert til utklippstavlen!", ko: "방 코드가 클립보드에 복사되었습니다!" },
     "Error:": { en: "Error:", no: "Feil:", ko: "오류:" },
+    "Network connection lost. Please check your internet.": { en: "Network connection lost. Please check your internet.", no: "Nettverkstilkobling tapt. Vennligst sjekk internettet ditt.", ko: "네트워크 연결이 끊겼습니다. 인터넷 연결을 확인해 주세요." },
 
     // dynamic rendering variables
     "Complete": { en: "Complete", no: "Fullfør", ko: "완료" },
@@ -86,7 +87,6 @@ const dictionary = {
 
 // language functions
 export function getBrowserLang() {
-    // Check for manual override first
     const savedLang = localStorage.getItem('pomodoro_lang');
     if (savedLang && ['en', 'no', 'ko'].includes(savedLang)) return savedLang;
 
@@ -98,7 +98,7 @@ export function getBrowserLang() {
 export function setLanguage(langCode) {
     if (['en', 'no', 'ko'].includes(langCode)) {
         localStorage.setItem('pomodoro_lang', langCode);
-        window.location.reload(); // Reload to apply changes everywhere
+        window.location.reload(); 
     }
 }
 

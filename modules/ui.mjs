@@ -162,28 +162,56 @@ export function renderRoom(status) {
 
     if (tasksContainer && tasksGrid && status.tasks) {
         if (status.tasks.length > 0) {
-            const tasksHTML = status.tasks.map(task => {
-                const customClass = task.color ? 'has-custom-color' : '';
-                const customStyle = task.color ? `style="border-top: 4px solid ${task.color};"` : '';
-                
-                return `
-                <div class="task-card ${task.completed ? 'completed' : ''} ${customClass}" data-user="${task.userId}" ${customStyle}>
-                    <div class="task-user">${task.username}</div>
-                    <h4 class="task-name">${task.name}</h4>
-                    ${task.description ? `<p class="task-desc">${task.description}</p>` : ''}
-                    ${!task.completed && task.userId === state.currentUser.userId ? `<button class="task-complete-btn" onclick="window.completeTask('${task.id}')">${t('Complete')}</button>` : ''}
-                    
-                    <div class="task-meta">
-                        <span>${formatTime(task.createdAt)}</span>
-                        <span>${task.completed ? `✓ ${formatTime(task.completedAt)}` : ''}</span>
-                    </div>
-                </div>
-                `;
-            }).join('');
+            tasksGrid.innerHTML = ''; 
 
-            if (tasksGrid.innerHTML !== tasksHTML) {
-                tasksGrid.innerHTML = tasksHTML;
-            }
+            status.tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = `task-card ${task.completed ? 'completed' : ''} ${task.color ? 'has-custom-color' : ''}`;
+                card.dataset.user = task.userId;
+                
+                if (task.color) {
+                    card.style.borderTop = `4px solid ${task.color}`;
+                }
+
+                const userDiv = document.createElement('div');
+                userDiv.className = 'task-user';
+                userDiv.innerText = task.username;
+                card.appendChild(userDiv);
+
+                const nameH4 = document.createElement('h4');
+                nameH4.className = 'task-name';
+                nameH4.innerText = task.name;
+                card.appendChild(nameH4);
+
+                if (task.description) {
+                    const descP = document.createElement('p');
+                    descP.className = 'task-desc';
+                    descP.innerText = task.description;
+                    card.appendChild(descP);
+                }
+
+                if (!task.completed && task.userId === state.currentUser.userId) {
+                    const completeBtn = document.createElement('button');
+                    completeBtn.className = 'task-complete-btn';
+                    completeBtn.innerText = t('Complete');
+                    completeBtn.onclick = () => window.completeTask(task.id);
+                    card.appendChild(completeBtn);
+                }
+
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'task-meta';
+
+                const timeSpan = document.createElement('span');
+                timeSpan.innerText = formatTime(task.createdAt);
+                metaDiv.appendChild(timeSpan);
+
+                const completedSpan = document.createElement('span');
+                completedSpan.innerText = task.completed ? `✓ ${formatTime(task.completedAt)}` : '';
+                metaDiv.appendChild(completedSpan);
+
+                card.appendChild(metaDiv);
+                tasksGrid.appendChild(card);
+            });
         } else {
             tasksGrid.innerHTML = `<p style="color: var(--text-muted); font-size: 0.95rem; grid-column: 1 / -1; text-align: center; margin: 1rem 0;">${t('No tasks added yet. Click the + to add your first task!')}</p>`;
         }
@@ -262,13 +290,11 @@ export async function loadPolicy(policyType) {
 
 // localization functions
 export function translatePage() {
-    // 1. Translate static elements with a data-t attribute
     document.querySelectorAll('[data-t]').forEach(el => {
         const key = el.getAttribute('data-t');
         el.innerText = t(key);
     });
 
-    // 2. Translate placeholders
     document.querySelectorAll('[data-t-placeholder]').forEach(el => {
         const key = el.getAttribute('data-t-placeholder');
         el.placeholder = t(key);

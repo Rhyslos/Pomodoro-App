@@ -2,6 +2,7 @@ import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeTaskModal, closeAdminModal } from './ui.mjs';
 import { t } from '/lang/client_i18n.mjs';
+import { sanitizeString } from './sanitize.mjs';
 
 // polling functions
 export async function updateRoomStatus() {
@@ -31,7 +32,9 @@ export function startPolling() {
 export async function createSession() {
     if (!state.currentUser) return;
 
-    const roomName = document.getElementById('setting-room-name').value || `${state.currentUser.username}${t("'s Room")}`;
+    const rawRoomName = document.getElementById('setting-room-name').value || `${state.currentUser.username}${t("'s Room")}`;
+    const roomName = sanitizeString(rawRoomName);
+    
     const workTime = parseInt(document.getElementById('setting-work-time').value) || 25;
     const breakTime = parseInt(document.getElementById('setting-break-time').value) || 5;
     const longBreakTime = parseInt(document.getElementById('setting-long-break-time').value) || 15;
@@ -69,7 +72,7 @@ export async function joinRoom() {
     const codeInput = document.getElementById('roomCodeInput');
     if (!codeInput || !codeInput.value) return alert(t("Please enter a room code"));
     
-    const code = codeInput.value.trim().toUpperCase();
+    const code = sanitizeString(codeInput.value.trim().toUpperCase());
     const room = await makeRequest(`/api/sessions/${code}/join`, "POST");
     
     if (room) {
@@ -122,7 +125,7 @@ export function sendTimerAction(action) {
 
     renderRoom(state.currentRoomStatus);
 
-    makeRequest(`/api/sessions/${state.currentRoomId}/action`, "POST", { action });
+    makeRequest(`/api/sessions/${state.currentRoomId}/action`, "POST", { action: sanitizeString(action) });
 }
 
 export function copyRoomCode() {
@@ -136,17 +139,20 @@ export function copyRoomCode() {
 export async function createTask() {
     if (!state.currentRoomId || !state.currentUser) return;
 
-    const name = document.getElementById('task-name').value.trim();
-    const desc = document.getElementById('task-desc').value.trim();
+    const rawName = document.getElementById('task-name').value.trim();
+    const rawDesc = document.getElementById('task-desc').value.trim();
     
-    if (!name) return alert(t("Task name is required"));
+    if (!rawName) return alert(t("Task name is required"));
+
+    const name = sanitizeString(rawName);
+    const desc = sanitizeString(rawDesc);
 
     const newTask = {
         name: name,
         description: desc,
         userId: state.currentUser.userId,
-        username: state.currentUser.username,
-        color: state.currentUser.color,
+        username: sanitizeString(state.currentUser.username),
+        color: state.currentUser.color ? sanitizeString(state.currentUser.color) : null,
         createdAt: new Date().toISOString()
     };
 
@@ -165,12 +171,13 @@ export function completeTask(taskId) {
     if (!state.currentRoomId || !state.currentRoomStatus) return;
 
     if (state.currentRoomStatus.tasks) {
-        const task = state.currentRoomStatus.tasks.find(t => t.id === taskId);
+        const safeTaskId = sanitizeString(taskId);
+        const task = state.currentRoomStatus.tasks.find(t => t.id === safeTaskId);
         if (task && task.userId === state.currentUser.userId) {
             task.completed = true;
             task.completedAt = new Date().toISOString();
             renderRoom(state.currentRoomStatus);
-            makeRequest(`/api/sessions/${state.currentRoomId}/tasks/${taskId}`, "PATCH");
+            makeRequest(`/api/sessions/${state.currentRoomId}/tasks/${safeTaskId}`, "PATCH");
         }
     }
 }
@@ -182,12 +189,15 @@ export function handleUserClick(targetUserId, targetUserName) {
     const taskCards = document.querySelectorAll('.task-card');
     taskCards.forEach(card => card.classList.remove('highlight'));
     
-    const userCards = document.querySelectorAll(`.task-card[data-user="${targetUserId}"]`);
+    const safeTargetUserId = sanitizeString(targetUserId);
+    const safeTargetUserName = sanitizeString(targetUserName);
+
+    const userCards = document.querySelectorAll(`.task-card[data-user="${safeTargetUserId}"]`);
     userCards.forEach(card => card.classList.add('highlight'));
 
-    if (state.currentUser.userId === state.currentRoomStatus.host.userId && targetUserId !== state.currentUser.userId) {
-        state.adminTargetUser = targetUserId;
-        document.getElementById('admin-target-name').innerText = targetUserName;
+    if (state.currentUser.userId === state.currentRoomStatus.host.userId && safeTargetUserId !== state.currentUser.userId) {
+        state.adminTargetUser = safeTargetUserId;
+        document.getElementById('admin-target-name').innerText = safeTargetUserName;
         document.getElementById('admin-modal').classList.remove('hidden');
     }
 }
@@ -197,7 +207,7 @@ export function adminAction(action) {
     
     makeRequest(`/api/sessions/${state.currentRoomId}/admin`, "POST", {
         targetId: state.adminTargetUser,
-        action: action
+        action: sanitizeString(action)
     });
     
     closeAdminModal();
@@ -217,7 +227,7 @@ export async function addFakeUser() {
     if (!state.currentRoomId) return;
     
     const randomId = Math.floor(Math.random() * 1000);
-    const fakeName = `TestUser_${randomId}`;
+    const fakeName = sanitizeString(`TestUser_${randomId}`);
     
     const response = await makeRequest("/api/users/register", "POST", { username: fakeName, password: "password" });
     

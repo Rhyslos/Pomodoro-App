@@ -1,11 +1,12 @@
+// Initialization functions
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
 import { t, getLang } from '../lang/server_i18n.mjs';
+import { sanitizeString, sanitizePayload } from '../modules/sanitize.mjs';
 
-// Initialization functions
 const router = express.Router();
 
 // Middleware functions
@@ -39,7 +40,9 @@ router.get('/views/:viewName', async (req, res) => {
 router.post('/users/register', async (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     try {
-        const { username, password } = req.body;
+        const username = sanitizeString(req.body.username);
+        const password = sanitizeString(req.body.password);
+        
         if (!username || !password) return res.status(400).json({ error: t("Missing fields", lang) });
 
         const user = await userManager.createUser(username, password);
@@ -55,7 +58,8 @@ router.post('/users/register', async (req, res) => {
 router.post('/users/login', async (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     try {
-        const { username, password } = req.body;
+        const username = sanitizeString(req.body.username);
+        const password = sanitizeString(req.body.password);
         const session = await userManager.loginUser(username, password);
         
         if (!session) return res.status(401).json({ error: t("Invalid credentials", lang) });
@@ -76,7 +80,8 @@ router.get('/users/me', requireAuth, (req, res) => {
 
 router.patch('/users/me', requireAuth, async (req, res) => {
     try {
-        const updatedUser = await userManager.updateUser(req.user.userId, req.body);
+        const safeUpdates = sanitizePayload(req.body);
+        const updatedUser = await userManager.updateUser(req.user.userId, safeUpdates);
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -94,8 +99,8 @@ router.delete('/users/me', requireAuth, async (req, res) => {
 
 // Session routing functions
 router.post('/sessions', requireAuth, async (req, res) => {
-    const { settings } = req.body;
-    const room = await sessionManager.createSession(req.user, settings); 
+    const safeSettings = sanitizePayload(req.body.settings);
+    const room = await sessionManager.createSession(req.user, safeSettings); 
     res.status(201).json({ roomId: room.id });
 });
 
@@ -143,7 +148,9 @@ router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
 router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const { roomId } = req.params;
-    const { action, payload } = req.body; 
+    
+    const action = sanitizeString(req.body.action); 
+    const payload = sanitizePayload(req.body.payload); 
     
     const room = sessionManager.getSession(roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
@@ -167,8 +174,10 @@ router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
     const room = sessionManager.getSession(req.params.roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
+    const safeBody = sanitizePayload(req.body);
+    
     const task = { 
-        ...req.body, 
+        ...safeBody, 
         id: Date.now().toString(), 
         completed: false,
         createdAt: new Date().toISOString()
@@ -199,7 +208,10 @@ router.post('/sessions/:roomId/lock', requireAuth, (req, res) => {
 
 router.post('/sessions/:roomId/admin', requireAuth, (req, res) => {
     const lang = getLang(req.headers['accept-language']);
-    const { targetId, action } = req.body;
+    
+    const targetId = sanitizeString(req.body.targetId);
+    const action = sanitizeString(req.body.action);
+    
     const room = sessionManager.getSession(req.params.roomId);
     
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });

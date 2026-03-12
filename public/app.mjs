@@ -8,7 +8,6 @@ import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDelet
 import { setLanguage } from '/lang/client_i18n.mjs';
 
 // initialization functions
-// initialization functions
 async function initApp() {
     console.log("App initializing..."); // Let's add a breadcrumb!
     const token = localStorage.getItem('pomodoro_token');

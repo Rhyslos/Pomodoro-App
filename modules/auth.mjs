@@ -3,12 +3,16 @@ import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { showDashboardScreen, loadView, toggleSettings, closeDeleteModal, renderRoom } from './ui.mjs';
 import { t } from '/Lang/client_i18n.mjs';
+import { sanitizeString } from './sanitize.mjs';
 
 // authentication functions
 export async function handleLogin(username, password) {
     if (!username || !password) return alert(t("Please enter both username and password"));
 
-    const response = await makeRequest("/api/users/login", "POST", { username, password });
+    const safeUsername = sanitizeString(username);
+    const safePassword = sanitizeString(password);
+
+    const response = await makeRequest("/api/users/login", "POST", { username: safeUsername, password: safePassword });
     
     if (response) {
         state.currentUser = response.user;
@@ -21,7 +25,10 @@ export async function handleRegister(username, password, hasConsented) {
     if (!username || !password) return alert(t("Please enter both username and password"));
     if (!hasConsented) return alert(t("You must agree to the Terms of Service and Privacy Policy to create an account."));
 
-    const response = await makeRequest("/api/users/register", "POST", { username, password });
+    const safeUsername = sanitizeString(username);
+    const safePassword = sanitizeString(password);
+
+    const response = await makeRequest("/api/users/register", "POST", { username: safeUsername, password: safePassword });
     
     if (response) {
         state.currentUser = response.user;
@@ -76,7 +83,7 @@ export function changeDisplayName() {
     const newName = prompt(t("Enter new display name:"), state.currentUser.username);
     if (!newName || newName.trim() === "") return;
 
-    const finalName = newName.trim();
+    const finalName = sanitizeString(newName.trim());
     state.currentUser.username = finalName;
     
     if (state.currentRoomStatus && state.currentRoomStatus.users) {
@@ -97,15 +104,17 @@ export function changePassword() {
     const newPassword = prompt(t("Enter a new password:"));
     if (!newPassword || newPassword.trim() === "") return;
 
+    const safePassword = sanitizeString(newPassword.trim());
+
     toggleSettings();
-    makeRequest("/api/users/me", "PATCH", { password: newPassword }).then(res => {
+    makeRequest("/api/users/me", "PATCH", { password: safePassword }).then(res => {
         if (res) alert(t("Password updated successfully."));
     });
 }
 
 export function changeDisplayColor(event) {
     if (!state.currentUser) return;
-    const newColor = event.target.value;
+    const newColor = sanitizeString(event.target.value);
 
     state.currentUser.color = newColor;
     

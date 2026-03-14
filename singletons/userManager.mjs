@@ -1,14 +1,14 @@
 import crypto from 'node:crypto';
 import { createUserID } from '../modules/lib.mjs';
+import { dbManager } from './dbManager.mjs';
 
-// User management classes
+// user management classes
 class UserManager {
     constructor() {
-        this.users = new Map();
         this.sessions = new Map();
     }
 
-    // Security functions
+    // security functions
     hashPassword(password, salt) {
         return crypto.scryptSync(password, salt, 64).toString('hex');
     }
@@ -21,11 +21,10 @@ class UserManager {
         return crypto.randomBytes(32).toString('hex');
     }
 
-    // Account creation functions
+    // account creation functions
     async createUser(username, password) {
-        for (const user of this.users.values()) {
-            if (user.username === username) return null;
-        }
+        const existingUser = await dbManager.getUserByUsername(username);
+        if (existingUser) return null;
 
         const userId = createUserID();
         const salt = this.generateSalt();
@@ -40,58 +39,60 @@ class UserManager {
             createdAt: new Date().toISOString()
         };
 
-        this.users.set(userId, newUser);
+        await dbManager.createUser(newUser);
         return { userId, username, color: newUser.color };
     }
 
-    // Authentication functions
+    // authentication functions
     async loginUser(username, password) {
-        for (const user of this.users.values()) {
-            if (user.username === username) {
-                const inputHash = this.hashPassword(password, user.salt);
-                
-                const storedHashBuffer = Buffer.from(user.passwordHash, 'hex');
-                const inputHashBuffer = Buffer.from(inputHash, 'hex');
-                
-                if (storedHashBuffer.length === inputHashBuffer.length && crypto.timingSafeEqual(storedHashBuffer, inputHashBuffer)) {
-                    const token = this.generateToken();
-                    this.sessions.set(token, user.userId);
-                    return { token, user: { userId: user.userId, username, color: user.color } };
-                }
-            }
+        const user = await dbManager.getUserByUsername(username);
+        if (!user) return null;
+
+        const inputHash = this.hashPassword(password, user.salt);
+        
+        const storedHashBuffer = Buffer.from(user.password_hash, 'hex');
+        const inputHashBuffer = Buffer.from(inputHash, 'hex');
+        
+        if (storedHashBuffer.length === inputHashBuffer.length && crypto.timingSafeEqual(storedHashBuffer, inputHashBuffer)) {
+            const token = this.generateToken();
+            this.sessions.set(token, user.id);
+            return { token, user: { userId: user.id, username: user.username, color: user.color } };
         }
+        
         return null;
     }
 
-    // Session validation functions
+    // session validation functions
     async getUserByToken(token) {
         const userId = this.sessions.get(token);
         if (!userId) return null;
         
-        const user = this.users.get(userId);
+        const user = await dbManager.getUserById(userId);
         if (!user) return null;
         
-        return { userId: user.userId, username: user.username, color: user.color };
+        return { userId: user.id, username: user.username, color: user.color };
     }
 
-    // Data update functions
+    // data update functions
     async updateUser(userId, updates) {
-        const user = this.users.get(userId);
+        const user = await dbManager.getUserById(userId);
         if (!user) return null;
 
-        if (updates.username) user.username = updates.username;
-        if (updates.color) user.color = updates.color;
+        const dbUpdates = {};
+        if (updates.username) dbUpdates.username = updates.username;
+        if (updates.color) dbUpdates.color = updates.color;
         if (updates.password) {
-            user.salt = this.generateSalt();
-            user.passwordHash = this.hashPassword(updates.password, user.salt);
+            dbUpdates.salt = this.generateSalt();
+            dbUpdates.passwordHash = this.hashPassword(updates.password, dbUpdates.salt);
         }
 
-        return { userId: user.userId, username: user.username, color: user.color };
+        const updatedUser = await dbManager.updateUser(userId, dbUpdates);
+        return { userId: updatedUser.id, username: updatedUser.username, color: updatedUser.color };
     }
 
-    // Account deletion functions
+    // account deletion functions
     async deleteUser(userId) {
-        this.users.delete(userId);
+        await dbManager.deleteUser(userId);
         
         for (const [token, id] of this.sessions.entries()) {
             if (id === userId) {
@@ -100,12 +101,12 @@ class UserManager {
         }
     }
     
-    // Session termination functions
+    // session termination functions
     async logoutUser(token) {
         this.sessions.delete(token);
     }
 }
 
-// Export variables
+// export variables
 const userManager = new UserManager();
 export { userManager };

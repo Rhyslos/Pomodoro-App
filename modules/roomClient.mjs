@@ -59,8 +59,8 @@ export async function createSession() {
     });
     
     if (room) {
-        state.currentRoomId = room.roomId;
-        sessionStorage.setItem('pomodoro_room', room.roomId);
+        state.currentRoomId = room.id;
+        sessionStorage.setItem('pomodoro_room', room.id);
         const loaded = await loadView('room');
         if (loaded) startPolling();
     }

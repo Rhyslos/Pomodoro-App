@@ -16,7 +16,8 @@ const dictionary = {
     "Forbidden": { en: "Forbidden", no: "Forbudt", ko: "금지됨" },
     "Task not found": { en: "Task not found", no: "Oppgave ikke funnet", ko: "작업을 찾을 수 없음" },
     "Debug mode is disabled": { en: "Debug mode is disabled", no: "Feilsøkingsmodus er deaktivert", ko: "디버그 모드가 비활성화되었습니다" },
-    "Failed to generate user": { en: "Failed to generate user", no: "Kunne ikke generere bruker", ko: "사용자 생성 실패" }
+    "Failed to generate user": { en: "Failed to generate user", no: "Kunne ikke generere bruker", ko: "사용자 생성 실패" },
+    "Too many attempts. Locked for 15 minutes.": { en: "Too many attempts. Locked for 15 minutes.", no: "For mange forsøk. Låst i 15 minutter.", ko: "시도 횟수가 너무 많습니다. 15분 동안 잠겼습니다." },
 };
 
 // language functions

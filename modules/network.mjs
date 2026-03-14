@@ -37,14 +37,15 @@ export async function makeRequest(url, method = "GET", body = null, responseType
         }
         return await response.json();
     } catch (error) {
-        console.error("API Error:", error);
+        if (error.status !== 401) {
+            console.error("API Error:", error);
+        }
         
         if (error.name === 'TypeError') {
             alert(t("Network connection lost. Please check your internet."));
         } else if (error.status !== 401) {
             alert(`${t("Error:")} ${error.message}`);
         }
-        
-        return null;
+        throw error;
     }
 }

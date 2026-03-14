@@ -1,30 +1,14 @@
-// string sanitization functions
+// sanitization functions
 export function sanitizeString(input) {
-    if (typeof input !== 'string') return input;
+    if (typeof input !== 'string') return '';
     
-    return input
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
-}
-
-// object sanitization functions
-export function sanitizePayload(payload) {
-    if (typeof payload !== 'object' || payload === null) {
-        return sanitizeString(payload);
-    }
-
-    if (Array.isArray(payload)) {
-        return payload.map(item => sanitizePayload(item));
-    }
-
-    const sanitized = {};
-    for (const key in payload) {
-        sanitized[key] = sanitizePayload(payload[key]);
-    }
-    
-    return sanitized;
+    const decoded = input
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#x27;/g, "'")
+        .replace(/&#39;/g, "'");
+        
+    return decoded.replace(/[<>]/g, '').trim();
 }

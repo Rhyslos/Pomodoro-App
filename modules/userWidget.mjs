@@ -10,23 +10,28 @@ class UserWidget extends HTMLElement {
 
     // ui generation functions
     render() {
-        if (this.mode === 'auth') {
-            this.innerHTML = `
-                <div class="form-group">
-                    <input type="text" id="wc-username" placeholder="${t('Display Name')}">
-                    <input type="password" id="wc-password" placeholder="${t('Password')}">
-                </div>
-                
-                <div class="tos-container">
-                    <input type="checkbox" id="wc-tos-consent">
-                    <label for="wc-tos-consent">I agree to the <a href="#" onclick="window.loadPolicy('tos'); return false;">Terms</a> and <a href="#" onclick="window.loadPolicy('privacy'); return false;">Privacy Policy</a></label>
-                </div>
+    if (this.mode === 'auth') {
+        this.innerHTML = `
+            <div class="form-group">
+                <input type="text" id="wc-username" placeholder="${t('Display Name')}">
+                <input type="password" id="wc-password" placeholder="${t('Password')}">
+            </div>
+            
+            <div class="tos-container">
+                <input type="checkbox" id="wc-tos-consent">
+                <label for="wc-tos-consent">
+                    <span data-t="I accept the">${t('I accept the')}</span> 
+                    <a href="#" data-t="Terms of Service" onclick="window.loadPolicy('tos'); return false;">${t('Terms of Service')}</a> 
+                    <span data-t="and">${t('and')}</span> 
+                    <a href="#" data-t="Privacy Policy" onclick="window.loadPolicy('privacy'); return false;">${t('Privacy Policy')}</a>
+                </label>
+            </div>
 
-                <div class="auth-buttons">
-                    <button id="wc-login-btn">${t('Login')}</button>
-                    <button id="wc-register-btn">${t('Create Account')}</button>
-                </div>
-            `;
+            <div class="auth-buttons">
+                <button id="wc-login-btn" data-t="Login">${t('Login')}</button>
+                <button id="wc-register-btn" data-t="Create Account">${t('Create Account')}</button>
+            </div>
+        `;
 
             // user event functions
             this.querySelector('#wc-login-btn').addEventListener('click', () => {

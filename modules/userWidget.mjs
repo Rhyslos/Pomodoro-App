@@ -49,11 +49,26 @@ class UserWidget extends HTMLElement {
             });
             
         } else if (this.mode === 'profile') {
-            // ... (keep your existing profile render code here)
-        }
+            this.innerHTML = `
+                <li><a href="#" id="wc-edit-name" data-t="Change Name">${t('Change Name')}</a></li>
+                <li><a href="#" id="wc-edit-pass" data-t="Change Password">${t('Change Password')}</a></li>
+                <li><a href="#" id="wc-delete" class="danger-text" data-t="Delete Account">${t('Delete Account')}</a></li>
+            `;
 
-        // 2. Force translation of the newly injected HTML
-        translatePage(); 
+            // user event functions
+            this.querySelector('#wc-edit-name').addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                changeDisplayName(); 
+            });
+            this.querySelector('#wc-edit-pass').addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                changePassword(); 
+            });
+            this.querySelector('#wc-delete').addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                deleteAccount(); 
+            });
+        }
     }
 }
 

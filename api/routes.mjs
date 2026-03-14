@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
 import { t, getLang } from '../lang/server_i18n.mjs';
-import { sanitizeString, sanitizePayload } from '../modules/sanitize.mjs';
+import { sanitizeString } from '../modules/sanitize.mjs';
 
 const router = express.Router();
 
@@ -161,8 +161,12 @@ router.get('/users/me', requireAuth, (req, res) => {
 
 router.patch('/users/me', requireAuth, async (req, res) => {
     try {
-        const safeUpdates = sanitizePayload(req.body);
-        const updatedUser = await userManager.updateUser(req.user.userId, safeUpdates);
+        const updates = req.body || {};
+        // Replace sanitizePayload with individual string sanitization
+        if (updates.username) updates.username = sanitizeString(updates.username);
+        if (updates.color) updates.color = sanitizeString(updates.color);
+        
+        const updatedUser = await userManager.updateUser(req.user.userId, updates);
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -181,9 +185,11 @@ router.delete('/users/me', requireAuth, async (req, res) => {
 
 // session routing functions
 router.post('/sessions', requireAuth, async (req, res) => {
-    const safeSettings = sanitizePayload(req.body.settings);
-    const room = await sessionManager.createSession(req.user, safeSettings); 
-    res.status(201).json({ roomId: room.id });
+    const lang = getLang(req.headers['accept-language']);
+    const settings = req.body.settings || {}; 
+    
+    const room = await sessionManager.createSession(req.user, settings);
+    res.status(201).json(room.getStatus());
 });
 
 router.get('/sessions/:roomId', requireAuth, (req, res) => {
@@ -238,7 +244,7 @@ router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     const { roomId } = req.params;
     
     const action = sanitizeString(req.body.action); 
-    const payload = sanitizePayload(req.body.payload); 
+    const payload = req.body.payload || {}; // sanitizePayload removed
     
     const room = sessionManager.getSession(roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
@@ -262,15 +268,13 @@ router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
     const room = sessionManager.getSession(req.params.roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
-    const safeBody = sanitizePayload(req.body);
-    
     const task = { 
         id: crypto.randomUUID(), 
         userId: req.user.userId,
         username: req.user.username,
         color: req.user.color,
-        name: safeBody.name,
-        description: safeBody.description,
+        name: sanitizeString(req.body.name), // sanitizePayload replaced with sanitizeString
+        description: sanitizeString(req.body.description), // sanitizePayload replaced with sanitizeString
         completed: false,
         createdAt: new Date().toISOString()
     };

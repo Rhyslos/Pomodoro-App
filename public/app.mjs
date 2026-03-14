@@ -2,34 +2,42 @@
 import './modules/userWidget.mjs';
 import { makeRequest } from './modules/network.mjs';
 import { state } from './modules/state.mjs';
-import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme } from './modules/ui.mjs';
+import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy } from './modules/ui.mjs';
 import { startPolling, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser } from './modules/roomClient.mjs';
 import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
 import { setLanguage } from '/lang/client_i18n.mjs';
 
 // initialization functions
 async function initApp() {
-    const user = await makeRequest('/api/users/me', 'GET');
-    
-    if (user) {
-        state.currentUser = user;
+    try {
+        // We attempt to get the user, but we don't let a 401 crash the app
+        const user = await makeRequest('/api/users/me', 'GET');
         
-        const savedRoom = sessionStorage.getItem('pomodoro_room');
-        if (savedRoom) {
-            state.currentRoomId = savedRoom;
-            const loaded = await loadView('room');
-            if (loaded) {
-                startPolling();
-                return; 
+        if (user) {
+            state.currentUser = user;
+            
+            const savedRoom = sessionStorage.getItem('pomodoro_room');
+            if (savedRoom) {
+                state.currentRoomId = savedRoom;
+                const loaded = await loadView('room');
+                if (loaded) {
+                    startPolling();
+                    return; 
+                }
             }
+            
+            await showDashboardScreen();
+            return;
         }
-        
-        await showDashboardScreen();
-        return;
-    } else {
-        sessionStorage.removeItem('pomodoro_room');
+    } catch (error) {
+        // If it's just an unauthorized error, we ignore it and show login
+        if (error.status !== 401) {
+            console.error("Initial auth check failed:", error);
+        }
     }
     
+    // Default fallback if not logged in or session expired
+    sessionStorage.removeItem('pomodoro_room');
     await loadView('login');
 }
 
@@ -48,6 +56,7 @@ window.closeTaskModal = closeTaskModal;
 window.closeAdminModal = closeAdminModal;
 window.closeDeleteModal = closeDeleteModal;
 window.toggleTheme = toggleTheme;
+window.loadPolicy = loadPolicy; 
 
 // room bindings
 window.createSession = createSession;

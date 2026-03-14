@@ -110,6 +110,10 @@ const dictionary = {
     "Service Limitations": { en: "Service Limitations", no: "Tjenestebegrensninger", ko: "서비스 제한" },
     "tos_limitations": { en: "This service is provided \"as is.\" Because we do not persistently store accounts, clearing your browser cache or switching devices will result in the loss of your session identity. We are not liable for any interruptions in service or loss of active session status.", no: "Denne tjenesten leveres \"som den er.\" Fordi vi ikke lagrer kontoer vedvarende, vil tømming av nettleserbufferen eller bytte av enhet føre til tap av øktidentiteten din. Vi er ikke ansvarlige for avbrudd i tjenesten eller tap av aktiv øktstatus.", ko: "이 서비스는 \"있는 그대로\" 제공됩니다. 계정을 지속적으로 저장하지 않기 때문에 브라우저 캐시를 지우거나 기기를 전환하면 세션 ID가 손실됩니다. 당사는 서비스 중단 또는 활성 세션 상태 손실에 대해 책임을 지지 않습니다." },
     "Back to App": { en: "Back to App", no: "Tilbake til appen", ko: "앱으로 돌아가기" },
+    "I accept the": { en: "I accept the", no: "Jeg godtar", ko: "본인은" },
+    "Terms of Service": { en: "Terms of Service", no: "tjenestevilkårene", ko: "이용약관" },
+    "and": { en: "and", no: "og", ko: "및" },
+    "Privacy Policy": { en: "Privacy Policy", no: "personvernerklæringen", ko: "개인정보처리방침" },
 
     // policy variables
     "What Information We Collect": { en: "What Information We Collect", no: "Hvilken informasjon vi samler inn", ko: "수집하는 정보" },

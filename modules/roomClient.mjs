@@ -238,8 +238,8 @@ export async function addFakeUser() {
 export async function goHome() {
     if (state.currentUser) {
         if (state.currentRoomId) {
-            const loaded = await loadView('room');
-            if (loaded) updateRoomStatus();
+            await loadView('room');
+            startPolling();
         } else {
             await showDashboardScreen();
         }

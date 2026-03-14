@@ -3,7 +3,7 @@ import './modules/userWidget.mjs';
 import { makeRequest } from './modules/network.mjs';
 import { state } from './modules/state.mjs';
 import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy } from './modules/ui.mjs';
-import { startPolling, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser } from './modules/roomClient.mjs';
+import { startPolling, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
 import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
 import { setLanguage } from '/lang/client_i18n.mjs';
 
@@ -71,6 +71,7 @@ window.handleUserClick = handleUserClick;
 window.adminAction = adminAction;
 window.toggleRoomLock = toggleRoomLock;
 window.addFakeUser = addFakeUser;
+window.goHome = goHome;
 
 // auth bindings
 window.handleLogin = handleLogin;

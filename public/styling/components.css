@@ -174,6 +174,50 @@ button:active {
     cursor: pointer;
 }
 
+/* tos styling */
+.tos-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.tos-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--accent-main);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.tos-container label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin: 0;
+    line-height: 1.4;
+    font-weight: 400;
+}
+
+.tos-container span {
+    color: inherit;
+    font-weight: normal;
+    font-size: inherit;
+}
+
+.tos-container a {
+    color: var(--accent-main);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.tos-container a:hover {
+    color: var(--accent-main-hover);
+}
+
 /* action group styling */
 .modal-actions {
     display: flex;

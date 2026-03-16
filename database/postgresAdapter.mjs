@@ -7,9 +7,14 @@ const { Pool } = pkg;
 export class PostgresAdapter extends DBAdapter {
     constructor(connectionString) {
         super();
+        
+        const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+
         this.pool = new Pool({
             connectionString: connectionString,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false
+            ssl: isLocal ? false : {
+                rejectUnauthorized: false
+            }
         });
     }
 

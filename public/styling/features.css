@@ -279,3 +279,32 @@ body.dark-theme .has-custom-color {
     z-index: 2;
     font-weight: 600;
 }
+
+/* notification styling */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-main);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+.toast-error { background: var(--accent-stop); }
+
+@keyframes slideUp {
+    from { transform: translate(-50%, 50px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* ensure task card wrap */
+.task-info h4 {
+    margin: 0;
+    color: var(--text-main);
+    word-break: break-word;
+}

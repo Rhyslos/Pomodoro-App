@@ -50,19 +50,18 @@ class UserManager {
 
         const inputHash = this.hashPassword(password, user.salt);
         
-        const storedHashBuffer = Buffer.from(user.password_hash, 'hex');
+        const storedHashBuffer = Buffer.from(user.passwordHash, 'hex');
         const inputHashBuffer = Buffer.from(inputHash, 'hex');
         
         if (storedHashBuffer.length === inputHashBuffer.length && crypto.timingSafeEqual(storedHashBuffer, inputHashBuffer)) {
             const token = this.generateToken();
-            this.sessions.set(token, user.id);
-            return { token, user: { userId: user.id, username: user.username, color: user.color } };
+            this.sessions.set(token, user.userId);
+            return { token, user: { userId: user.userId, username: user.username, color: user.color } };
         }
         
         return null;
     }
 
-    // session validation functions
     async getUserByToken(token) {
         const userId = this.sessions.get(token);
         if (!userId) return null;
@@ -70,10 +69,9 @@ class UserManager {
         const user = await dbManager.getUserById(userId);
         if (!user) return null;
         
-        return { userId: user.id, username: user.username, color: user.color };
+        return { userId: user.userId, username: user.username, color: user.color };
     }
 
-    // data update functions
     async updateUser(userId, updates) {
         const user = await dbManager.getUserById(userId);
         if (!user) return null;
@@ -87,7 +85,7 @@ class UserManager {
         }
 
         const updatedUser = await dbManager.updateUser(userId, dbUpdates);
-        return { userId: updatedUser.id, username: updatedUser.username, color: updatedUser.color };
+        return { userId: updatedUser.userId, username: updatedUser.username, color: updatedUser.color };
     }
 
     // account deletion functions

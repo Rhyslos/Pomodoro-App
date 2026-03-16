@@ -5,10 +5,12 @@ import { state } from './modules/state.mjs';
 import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy } from './modules/ui.mjs';
 import { startSSE, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
 import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
-import { setLanguage } from '/lang/client_i18n.mjs';
+import { setLanguage, loadClientDictionary } from '/lang/client_i18n.mjs';
 
 // initialization functions
 async function initApp() {
+    await loadClientDictionary();
+    
     try {
         const user = await makeRequest('/api/users/me', 'GET');
         

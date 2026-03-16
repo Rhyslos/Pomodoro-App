@@ -41,7 +41,7 @@ export async function logoutAccount() {
     state.currentRoomId = null;
     state.currentRoomStatus = null;
     
-    if (state.pollInterval) clearInterval(state.pollInterval);
+    if (state.eventSource) state.eventSource.close();
     toggleSettings();
     await loadView('login');
 }
@@ -69,7 +69,7 @@ export async function confirmDeleteAccount() {
     
     closeDeleteModal();
     
-    if (state.pollInterval) clearInterval(state.pollInterval);
+    if (state.eventSource) state.eventSource.close();
     
     await loadView('login');
 }

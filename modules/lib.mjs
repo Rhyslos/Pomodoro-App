@@ -1,16 +1,16 @@
 // room generation functions
 export function createRoomCode() {
-    let RoomCode = "";
+    let roomCode = "";
     const characters = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789";
     
     for (let i = 0; i < 6; i++) {
-        RoomCode += characters.charAt(Math.floor(Math.random() * characters.length));
+        roomCode += characters.charAt(Math.floor(Math.random() * characters.length));
 
         if (i === 2) {
-            RoomCode += "-";
+            roomCode += "-";
         }
     }
-    return RoomCode;
+    return roomCode;
 }
 
 // ID generation functions

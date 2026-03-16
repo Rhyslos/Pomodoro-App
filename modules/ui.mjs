@@ -33,11 +33,37 @@ export async function showDashboardScreen() {
     }
 }
 
+// timer functions
+let localTimerInterval = null;
+
+// timer functions
+export function startLocalTimer(status) {
+    if (localTimerInterval) clearInterval(localTimerInterval);
+
+    const timerDisplay = document.getElementById('timer-display');
+    if (!timerDisplay) return;
+
+    localTimerInterval = setInterval(() => {
+        let currentRemaining = status.timer.remaining;
+
+        // if timer is running, calculate the time elapsed since the last server update
+        if (status.timer.state !== 'idle' && !status.timer.isPaused && status.timer.lastUpdatedAt) {
+            const elapsedSeconds = Math.floor((Date.now() - new Date(status.timer.lastUpdatedAt).getTime()) / 1000);
+            currentRemaining = Math.max(0, status.timer.remaining - elapsedSeconds);
+        }
+
+        timerDisplay.innerText = formatTime(currentRemaining);
+
+        if (currentRemaining <= 0 && status.timer.state !== 'idle') {
+            clearInterval(localTimerInterval);
+        }
+    }, 250); // update every 250ms for visual smoothness
+}
+
 // room rendering functions
 export function renderRoom(status) {
     if (!status) return;
 
-    // update header and basic info
     const nameDisplay = document.getElementById('room-name-display');
     const codeDisplay = document.getElementById('room-code-display');
     const codeSubtitle = document.getElementById('room-code-subtitle');
@@ -50,7 +76,6 @@ export function renderRoom(status) {
         status.settings.showCode ? codeSubtitle.classList.remove('hidden') : codeSubtitle.classList.add('hidden');
     }
 
-    // host-only UI elements
     if (state.currentUser && status.host.userId === state.currentUser.userId) {
         if (lockBtn) {
             lockBtn.classList.remove('hidden');
@@ -59,13 +84,10 @@ export function renderRoom(status) {
         document.querySelectorAll('.host-only').forEach(el => el.classList.remove('hidden'));
     }
 
-    // update timer and status
-    const timerDisplay = document.getElementById('timer-display');
     const statusDisplay = document.getElementById('status-display');
     const primaryBtn = document.getElementById('primary-timer-btn');
 
-    if (timerDisplay) timerDisplay.innerText = formatTime(status.timer.remaining);
-    if (statusDisplay) statusDisplay.innerText = t(status.timer.state);
+    if (statusDisplay) statusDisplay.innerText = t(status.timer.state.toUpperCase());
 
     if (primaryBtn) {
         if (status.timer.state === 'idle' || status.timer.state === 'finished') {
@@ -80,6 +102,8 @@ export function renderRoom(status) {
         }
     }
 
+    // handle the time countdown locally
+    startLocalTimer(status);
     renderFloatingNames(status.users);
     renderTasks(status.tasks);
 }
@@ -90,13 +114,12 @@ function renderFloatingNames(users) {
     if (!container) return;
 
     container.innerHTML = '';
-    users.forEach((user, index) => {
+    users.forEach((user) => {
         const badge = document.createElement('div');
         badge.className = 'user-badge floating-name';
         badge.innerText = user.username;
         badge.style.backgroundColor = user.color || 'var(--name-default)';
         
-        // set random directions for the shake animation defined in features.css
         badge.style.setProperty('--dir-x', Math.random() > 0.5 ? 1 : -1);
         badge.style.setProperty('--dir-y', Math.random() > 0.5 ? 1 : -1);
         
@@ -134,11 +157,13 @@ export function openCreateRoomModal() {
     if (modal) modal.classList.remove('hidden');
 }
 
+// modal functions
 export function closeCreateRoomModal() {
     const modal = document.getElementById('create-room-modal');
     if (modal) modal.classList.add('hidden');
 }
 
+// modal functions
 export function openTaskModal() {
     const modal = document.getElementById('task-modal');
     if (modal) {
@@ -148,17 +173,20 @@ export function openTaskModal() {
     }
 }
 
+// modal functions
 export function closeTaskModal() {
     const modal = document.getElementById('task-modal');
     if (modal) modal.classList.add('hidden');
 }
 
+// modal functions
 export function closeAdminModal() {
     const modal = document.getElementById('admin-modal');
     if (modal) modal.classList.add('hidden');
     state.adminTargetUser = null;
 }
 
+// modal functions
 export function closeDeleteModal() {
     const modal = document.getElementById('delete-account-modal');
     if (modal) modal.classList.add('hidden');
@@ -170,11 +198,13 @@ export function toggleSettings() {
     if (menu) menu.classList.toggle('hidden');
 }
 
+// setting functions
 export function triggerColorPicker() {
     const picker = document.getElementById('name-color-picker');
     if (picker) picker.click();
 }
 
+// setting functions
 export function toggleTheme() {
     document.body.classList.toggle('dark-theme');
     const isDark = document.body.classList.contains('dark-theme');

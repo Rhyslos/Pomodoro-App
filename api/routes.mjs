@@ -139,6 +139,24 @@ router.get('/sessions/:roomId', requireAuth, (req, res) => {
     res.json(room.getStatus());
 });
 
+router.get('/sessions/:roomId/events', requireAuth, (req, res) => {
+    const room = sessionManager.getSession(req.params.roomId);
+    if (!room) return res.status(404).end();
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    res.write(`data: ${JSON.stringify(room.getStatus())}\n\n`);
+
+    room.addClient(res);
+
+    req.on('close', () => {
+        room.removeClient(res);
+    });
+});
+
 router.post('/sessions/:roomId/join', requireAuth, async (req, res) => {
     const lang = getLang(req.headers['accept-language']);
     const { roomId } = req.params;

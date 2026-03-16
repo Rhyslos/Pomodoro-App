@@ -4,29 +4,27 @@ import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeT
 import { t } from '/lang/client_i18n.mjs';
 import { sanitizeString } from './sanitize.mjs';
 
-// polling functions
-export async function updateRoomStatus() {
-    if (!state.currentRoomId) return;
+// connection functions
+export function startSSE() {
+    if (state.eventSource) {
+        state.eventSource.close();
+    }
 
-    const status = await makeRequest(`/api/sessions/${state.currentRoomId}`, "GET");
-    
-    if (status) {
-        state.currentRoomStatus = status; 
+    state.eventSource = new EventSource(`/api/sessions/${state.currentRoomId}/events`);
+
+    state.eventSource.onmessage = (event) => {
+        const status = JSON.parse(event.data);
+        state.currentRoomStatus = status;
         renderRoom(status);
-    } else {
-        if (state.pollInterval) clearInterval(state.pollInterval);
+    };
+
+    state.eventSource.onerror = async () => {
+        state.eventSource.close();
         state.currentRoomId = null;
         state.currentRoomStatus = null;
         await showDashboardScreen();
         showToast(t("Session has ended or you were disconnected."), true);
-    }
-}
-
-// polling functions
-export function startPolling() {
-    if (state.pollInterval) clearInterval(state.pollInterval);
-    state.pollInterval = setInterval(updateRoomStatus, 3000);
-    updateRoomStatus(); 
+    };
 }
 
 // room action functions
@@ -34,54 +32,41 @@ export async function createSession() {
     if (!state.currentUser) return;
 
     const rawRoomName = document.getElementById('setting-room-name').value || `${state.currentUser.username}${t("'s Room")}`;
-    const roomName = sanitizeString(rawRoomName);
     
-    const workTime = parseInt(document.getElementById('setting-work-time').value) || 25;
-    const breakTime = parseInt(document.getElementById('setting-break-time').value) || 5;
-    const longBreakTime = parseInt(document.getElementById('setting-long-break-time').value) || 15;
-    const targetSets = parseInt(document.getElementById('setting-target-sets').value) || 4;
-    const autoStart = document.getElementById('setting-auto-start').checked;
-    const showCode = document.getElementById('setting-show-code').checked;
-    const debugMode = document.getElementById('setting-debug').checked;
+    const settings = {
+        workTime: parseInt(document.getElementById('setting-work').value),
+        breakTime: parseInt(document.getElementById('setting-break').value),
+        longBreakTime: parseInt(document.getElementById('setting-long').value),
+        targetSets: parseInt(document.getElementById('setting-sets').value),
+        autoStart: document.getElementById('setting-autostart').checked,
+        roomName: sanitizeString(rawRoomName)
+    };
 
-    closeCreateRoomModal();
-
-    const room = await makeRequest("/api/sessions", "POST", { 
-        settings: {
-            roomName: roomName,
-            workTime: workTime,
-            breakTime: breakTime,
-            longBreakTime: longBreakTime,
-            targetSets: targetSets,
-            autoStart: autoStart,
-            showCode: showCode,
-            debugMode: debugMode
-        }
-    });
+    const room = await makeRequest("/api/sessions", "POST", settings);
     
     if (room) {
         state.currentRoomId = room.id;
         sessionStorage.setItem('pomodoro_room', room.id);
+        closeCreateRoomModal();
         const loaded = await loadView('room');
-        if (loaded) startPolling();
+        if (loaded) startSSE();
     }
 }
 
 // room action functions
 export async function joinRoom() {
-    if (!state.currentUser) return;
-    
-    const codeInput = document.getElementById('roomCodeInput');
-    if (!codeInput || !codeInput.value) return showToast(t("Please enter a room code"), true);
-    
-    const code = sanitizeString(codeInput.value.trim().toUpperCase());
-    const room = await makeRequest(`/api/sessions/${code}/join`, "POST");
+    const roomIdInput = document.getElementById('join-room-id');
+    const roomId = sanitizeString(roomIdInput.value.trim().toUpperCase());
+
+    if (!roomId) return;
+
+    const room = await makeRequest(`/api/sessions/${roomId}/join`, "POST");
     
     if (room) {
         state.currentRoomId = room.id;
         sessionStorage.setItem('pomodoro_room', room.id);
         const loaded = await loadView('room');
-        if (loaded) startPolling();
+        if (loaded) startSSE();
     }
 }
 
@@ -94,7 +79,7 @@ export async function leaveSession() {
     state.currentRoomStatus = null;
     sessionStorage.removeItem('pomodoro_room');
     
-    if (state.pollInterval) clearInterval(state.pollInterval);
+    if (state.eventSource) state.eventSource.close();
     await showDashboardScreen();
 }
 
@@ -107,103 +92,59 @@ export async function endSession() {
     state.currentRoomStatus = null;
     sessionStorage.removeItem('pomodoro_room');
     
-    if (state.pollInterval) clearInterval(state.pollInterval);
+    if (state.eventSource) state.eventSource.close();
     await showDashboardScreen();
 }
 
-// timer control functions
+// timer action functions
 export function sendTimerAction(action) {
-    if (!state.currentRoomId || !state.currentRoomStatus) return;
-
-    if (action === 'start') {
-        state.currentRoomStatus.timer.state = 'work';
-        state.currentRoomStatus.timer.isPaused = false;
-    } else if (action === 'pause') {
-        state.currentRoomStatus.timer.isPaused = true;
-    } else if (action === 'resume') {
-        state.currentRoomStatus.timer.isPaused = false;
-    } else if (action === 'stop') {
-        state.currentRoomStatus.timer.state = 'idle';
-        state.currentRoomStatus.timer.isPaused = false;
-        state.currentRoomStatus.timer.remaining = state.currentRoomStatus.settings.workTime * 60;
-    }
-
-    renderRoom(state.currentRoomStatus);
-
-    makeRequest(`/api/sessions/${state.currentRoomId}/action`, "POST", { action: sanitizeString(action) });
-}
-
-// user assistance functions
-export function copyRoomCode() {
     if (!state.currentRoomId) return;
-    navigator.clipboard.writeText(state.currentRoomId).then(() => {
-        showToast(t("Room code copied to clipboard!"));
-    });
+    makeRequest(`/api/sessions/${state.currentRoomId}/timer`, "POST", { action: sanitizeString(action) });
 }
 
-// task management functions
+// ui action functions
+export function copyRoomCode() {
+    if (state.currentRoomId) {
+        navigator.clipboard.writeText(state.currentRoomId);
+        showToast(t("Room code copied!"));
+    }
+}
+
+// task functions
 export async function createTask() {
-    if (!state.currentRoomId || !state.currentUser) return;
+    if (!state.currentRoomId) return;
 
-    const rawName = document.getElementById('task-name').value.trim();
-    const rawDesc = document.getElementById('task-desc').value.trim();
-    
-    if (!rawName) return showToast(t("Task name is required"), true);
+    const taskName = sanitizeString(document.getElementById('task-name').value);
+    const taskDesc = sanitizeString(document.getElementById('task-desc').value);
 
-    const name = sanitizeString(rawName);
-    const desc = sanitizeString(rawDesc);
+    if (!taskName) return;
 
-    const newTask = {
-        name: name,
-        description: desc,
+    await makeRequest(`/api/sessions/${state.currentRoomId}/tasks`, "POST", {
+        id: crypto.randomUUID(),
+        name: taskName,
+        description: taskDesc,
         userId: state.currentUser.userId,
-        username: sanitizeString(state.currentUser.username),
-        color: state.currentUser.color ? sanitizeString(state.currentUser.color) : null,
-        createdAt: new Date().toISOString()
-    };
+        username: state.currentUser.username,
+        color: state.currentUser.color,
+        completed: false
+    });
 
     closeTaskModal();
-
-    const createdTask = await makeRequest(`/api/sessions/${state.currentRoomId}/tasks`, "POST", newTask);
-
-    if (createdTask && state.currentRoomStatus) {
-        if (!state.currentRoomStatus.tasks) state.currentRoomStatus.tasks = [];
-        state.currentRoomStatus.tasks.push(createdTask);
-        renderRoom(state.currentRoomStatus);
-    }
 }
 
-// task management functions
-export function completeTask(taskId) {
-    if (!state.currentRoomId || !state.currentRoomStatus) return;
-
-    if (state.currentRoomStatus.tasks) {
-        const safeTaskId = sanitizeString(taskId);
-        const task = state.currentRoomStatus.tasks.find(t => t.id === safeTaskId);
-        if (task && task.userId === state.currentUser.userId) {
-            task.completed = true;
-            task.completedAt = new Date().toISOString();
-            renderRoom(state.currentRoomStatus);
-            makeRequest(`/api/sessions/${state.currentRoomId}/tasks/${safeTaskId}`, "PATCH");
-        }
-    }
+// task functions
+export async function completeTask(taskId) {
+    if (!state.currentRoomId) return;
+    await makeRequest(`/api/sessions/${state.currentRoomId}/tasks/${taskId}/complete`, "POST");
 }
 
 // admin functions
 export function handleUserClick(targetUserId, targetUserName) {
-    if (!state.currentRoomStatus) return;
+    if (!state.currentUser || !state.currentRoomStatus) return;
 
-    const taskCards = document.querySelectorAll('.task-card');
-    taskCards.forEach(card => card.classList.remove('highlight'));
-    
-    const safeTargetUserId = sanitizeString(targetUserId);
-    const safeTargetUserName = sanitizeString(targetUserName);
-
-    const userCards = document.querySelectorAll(`.task-card[data-user="${safeTargetUserId}"]`);
-    userCards.forEach(card => card.classList.add('highlight'));
-
-    if (state.currentUser.userId === state.currentRoomStatus.host.userId && safeTargetUserId !== state.currentUser.userId) {
-        state.adminTargetUser = safeTargetUserId;
+    if (state.currentUser.userId === state.currentRoomStatus.host.userId && state.currentUser.userId !== targetUserId) {
+        state.adminTargetUser = targetUserId;
+        const safeTargetUserName = sanitizeString(targetUserName);
         document.getElementById('admin-target-name').innerText = safeTargetUserName;
         document.getElementById('admin-modal').classList.remove('hidden');
     }
@@ -226,29 +167,21 @@ export function toggleRoomLock() {
     if (!state.currentRoomId || !state.currentUser || !state.currentRoomStatus) return;
     if (state.currentUser.userId !== state.currentRoomStatus.host.userId) return;
 
-    state.currentRoomStatus.isLocked = !state.currentRoomStatus.isLocked;
-    renderRoom(state.currentRoomStatus);
-    
     makeRequest(`/api/sessions/${state.currentRoomId}/lock`, "POST");
 }
 
 // debug functions
 export async function addFakeUser() {
     if (!state.currentRoomId) return;
-    
-    const response = await makeRequest(`/api/sessions/${state.currentRoomId}/debug/fake-user`, "POST");
-    
-    if (response) {
-        updateRoomStatus(); 
-    }
+    await makeRequest(`/api/sessions/${state.currentRoomId}/debug/fake-user`, "POST");
 }
 
-// view functions
+// navigation functions
 export async function goHome() {
     if (state.currentUser) {
         if (state.currentRoomId) {
             await loadView('room');
-            startPolling();
+            startSSE();
         } else {
             await showDashboardScreen();
         }

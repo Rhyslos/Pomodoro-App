@@ -13,6 +13,7 @@ class pomodoroTimer {
         this.targetSets = targetSets;
         this.autoStart = autoStart;
         this.task = task || "Study Group";
+        this.onStateChange = onStateChange;
         
         this.currentSet = 0;
         this.remainingTime = this.workTime * 60 * 1000; 
@@ -114,6 +115,8 @@ class pomodoroTimer {
 
         this.targetEndTime = Date.now() + this.remainingTime;
         this.lastUpdatedAt = new Date().toISOString();
+
+        if (this.onStateChange) this.onStateChange();
 
         if (this.autoStart) {
             this.runInterval();

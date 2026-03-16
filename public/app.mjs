@@ -10,7 +10,6 @@ import { setLanguage } from '/lang/client_i18n.mjs';
 // initialization functions
 async function initApp() {
     try {
-        // We attempt to get the user, but we don't let a 401 crash the app
         const user = await makeRequest('/api/users/me', 'GET');
         
         if (user) {
@@ -30,7 +29,6 @@ async function initApp() {
             return;
         }
     } catch (error) {
-        // If it's just an unauthorized error, we ignore it and show login
         if (error.status !== 401) {
             console.error("Initial auth check failed:", error);
         }

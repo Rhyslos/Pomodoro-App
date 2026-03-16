@@ -46,6 +46,33 @@ export async function showDashboardScreen() {
     }
 }
 
+// timer functions
+let localTimerInterval = null;
+
+export function startLocalTimer(status) {
+    if (localTimerInterval) clearInterval(localTimerInterval);
+
+    const timerDisplay = document.getElementById('timer-display');
+    if (!timerDisplay) return;
+
+    localTimerInterval = setInterval(() => {
+        let currentRemaining = status.timer.remaining;
+
+        if (status.timer.state !== 'idle' && !status.timer.isPaused && status.timer.lastUpdatedAt) {
+            const elapsedSeconds = Math.floor((Date.now() - new Date(status.timer.lastUpdatedAt).getTime()) / 1000);
+            currentRemaining = Math.max(0, status.timer.remaining - elapsedSeconds);
+        }
+
+        const minutes = Math.floor(currentRemaining / 60);
+        const seconds = currentRemaining % 60;
+        timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (currentRemaining <= 0 && status.timer.state !== 'idle') {
+            clearInterval(localTimerInterval);
+        }
+    }, 250);
+}
+
 // ui functions
 export function renderRoom(status) {
     const roomNameDisplay = document.getElementById('room-name-display');
@@ -89,14 +116,10 @@ export function renderRoom(status) {
             debugBtn.classList.add('hidden');
         }
     }
+
+    // rendering function
+    startLocalTimer(status);
     
-    const minutes = Math.floor(status.timer.remaining / 60);
-    const seconds = status.timer.remaining % 60;
-    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    
-    if (timerDisplay) timerDisplay.innerText = timeString;
-    
-    // rendering functions
     if (statusDisplay) {
         statusDisplay.innerText = t(status.timer.state.toUpperCase()) || status.timer.state.toUpperCase();
     }

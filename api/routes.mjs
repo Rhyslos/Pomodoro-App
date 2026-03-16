@@ -162,11 +162,16 @@ router.get('/users/me', requireAuth, (req, res) => {
 router.patch('/users/me', requireAuth, async (req, res) => {
     try {
         const updates = req.body || {};
-        // Replace sanitizePayload with individual string sanitization
+        
         if (updates.username) updates.username = sanitizeString(updates.username);
         if (updates.color) updates.color = sanitizeString(updates.color);
         
         const updatedUser = await userManager.updateUser(req.user.userId, updates);
+        
+        for (const room of sessionManager.sessions.values()) {
+            room.updateUserCache(updatedUser);
+        }
+
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: error.message });

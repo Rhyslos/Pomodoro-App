@@ -24,7 +24,7 @@ export async function updateRoomStatus() {
 
 export function startPolling() {
     if (state.pollInterval) clearInterval(state.pollInterval);
-    state.pollInterval = setInterval(updateRoomStatus, 1000);
+    state.pollInterval = setInterval(updateRoomStatus, 3000);
     updateRoomStatus(); 
 }
 

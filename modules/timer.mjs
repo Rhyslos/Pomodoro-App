@@ -22,6 +22,7 @@ class pomodoroTimer {
         this.isPaused = false;
         
         this.intervalID = null;
+        this.lastUpdatedAt = null; 
     }
 
     // Timer action functions
@@ -32,6 +33,7 @@ class pomodoroTimer {
         this.remainingTime = this.workTime * 60 * 1000;
         this.isPaused = false;
         this.currentSet = 0;
+        this.lastUpdatedAt = new Date().toISOString();
 
         this.runInterval();
     }
@@ -41,12 +43,14 @@ class pomodoroTimer {
             clearInterval(this.intervalID);
             this.intervalID = null;
             this.isPaused = true;
+            this.lastUpdatedAt = new Date().toISOString();
         }
     }
 
     resumeTimer() {
         if (this.isPaused && (this.currentState === timerState.WORK || this.currentState === timerState.BREAK)) {
             this.isPaused = false;
+            this.lastUpdatedAt = new Date().toISOString();
             this.runInterval();
         }
     }
@@ -60,6 +64,7 @@ class pomodoroTimer {
         this.isPaused = false;
         this.remainingTime = this.workTime * 60 * 1000;
         this.currentSet = 0;
+        this.lastUpdatedAt = null;
     }
 
     runInterval() {
@@ -67,8 +72,9 @@ class pomodoroTimer {
 
         this.intervalID = setInterval(() => {
             this.remainingTime -= 1000;
+            this.lastUpdatedAt = new Date().toISOString();
 
-            if (this.remainingTime < 0) {
+            if (this.remainingTime <= 0) {
                 clearInterval(this.intervalID);
                 this.handlePhaseChange();
             }
@@ -80,28 +86,23 @@ class pomodoroTimer {
             this.currentSet++;
             this.currentState = timerState.BREAK;
             
-            // Trigger long break after target sets are completed
-            if (this.currentSet % this.targetSets === 0) {
+            if (this.currentSet > 0 && this.currentSet % this.targetSets === 0) {
                 this.remainingTime = this.longBreakTime * 60 * 1000; 
             } else {
                 this.remainingTime = this.breakTime * 60 * 1000; 
-            }
-
-            if (this.autoStart) {
-                this.runInterval();
-            } else {
-                this.isPaused = true;
             }
         } 
         else if (this.currentState === timerState.BREAK) {
             this.currentState = timerState.WORK;
             this.remainingTime = this.workTime * 60 * 1000;
-            
-            if (this.autoStart) {
-                this.runInterval();
-            } else {
-                this.isPaused = true;
-            }
+        }
+
+        this.lastUpdatedAt = new Date().toISOString();
+
+        if (this.autoStart) {
+            this.runInterval();
+        } else {
+            this.isPaused = true;
         }
     }
 
@@ -113,7 +114,8 @@ class pomodoroTimer {
             remaining: Math.ceil(this.remainingTime / 1000),
             currentSet: this.currentSet,
             targetSets: this.targetSets,
-            task: this.task
+            task: this.task,
+            lastUpdatedAt: this.lastUpdatedAt,
         };
     }
 }

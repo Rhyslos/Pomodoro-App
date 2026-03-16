@@ -7,7 +7,7 @@ let dictionary = {};
 // initialization functions
 export function loadDictionary() {
     try {
-        const file = fs.readFileSync(path.join(process.cwd(), 'locales', 'server.json'), 'utf-8');
+        const file = fs.readFileSync(path.join(process.cwd(),'lang', 'locales', 'server.json'), 'utf-8');
         dictionary = JSON.parse(file);
     } catch (err) {
         console.warn("Failed to load server dictionary JSON");

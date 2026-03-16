@@ -2,18 +2,23 @@ import { pomodoroTimer } from './timer.mjs';
 
 // room management classes
 class Room {
-    constructor(roomId, hostUser, customSettings = {}) {
-        this.id = roomId;
-        this.host = hostUser;
-        this.users = new Set([hostUser]); 
-        this.maxUsers = 1;
-        this.clients = new Set(); 
+    constructor(workTime, breakTime, longBreakTime, targetSets, autoStart, task, onStateChange) {
+        this.workTime = workTime;
+        this.breakTime = breakTime;
+        this.longBreakTime = longBreakTime;
+        this.targetSets = targetSets;
+        this.autoStart = autoStart;
+        this.task = task || "Study Group";
+        this.onStateChange = onStateChange;
         
-        this.startTime = new Date().toISOString();
-        this.isLocked = false;
-        this.bannedUsers = new Set();
-        this.tasks = [];
-        this.telemetry = { tasksCreated: 0, tasksCompleted: 0 };
+        this.currentSet = 0;
+        this.remainingTime = this.workTime * 60 * 1000; 
+        this.targetEndTime = null;
+        this.currentState = timerState.IDLE;
+        this.isPaused = false;
+        
+        this.intervalID = null;
+        this.lastUpdatedAt = null; 
 
         this.settings = {
             workTime: 25, 

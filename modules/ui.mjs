@@ -53,7 +53,7 @@ export function startLocalTimer(status) {
         let currentRemaining = status.timer.remaining;
 
         if (status.timer.state !== 'idle' && !status.timer.isPaused && status.timer.lastUpdatedAt) {
-            const elapsedSeconds = Math.floor((Date.now() - new Date(status.timer.lastUpdatedAt).getTime()) / 1000);
+            const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(status.timer.lastUpdatedAt).getTime()) / 1000));
             currentRemaining = Math.max(0, status.timer.remaining - elapsedSeconds);
         }
 
@@ -66,7 +66,6 @@ export function startLocalTimer(status) {
         }
     }, 250);
 }
-
 // rendering functions
 export function renderRoom(status) {
     const roomNameDisplay = document.getElementById('room-name-display');

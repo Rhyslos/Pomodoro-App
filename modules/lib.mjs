@@ -2,11 +2,9 @@
 export function createRoomCode() {
     let RoomCode = "";
     const characters = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789";
-    const randomArray = new Uint32Array(6);
-    crypto.getRandomValues(randomArray);
-
+    
     for (let i = 0; i < 6; i++) {
-        RoomCode += characters.charAt(randomArray[i] % characters.length);
+        RoomCode += characters.charAt(Math.floor(Math.random() * characters.length));
 
         if (i === 2) {
             RoomCode += "-";
@@ -17,7 +15,14 @@ export function createRoomCode() {
 
 // ID generation functions
 export function createUserID() {
-    return crypto.randomUUID();
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 // ID generation functions

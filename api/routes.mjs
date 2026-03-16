@@ -119,9 +119,14 @@ router.delete('/users/me', requireAuth, async (req, res) => {
 
 // session routing functions
 router.post('/sessions', requireAuth, async (req, res) => {
-    const settings = req.body.settings || {}; 
-    const room = await sessionManager.createSession(req.user, settings);
-    res.status(201).json(room.getStatus());
+    try {
+        const settings = req.body.settings || {};
+        const room = await sessionManager.createSession(req.user, settings);
+        res.status(201).json(room.getStatus());
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
 });
 
 router.get('/sessions/:roomId', requireAuth, (req, res) => {

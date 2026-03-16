@@ -1,4 +1,4 @@
-import { pomodoroTimer } from './timer.mjs';
+import { PomodoroTimer } from './timer.mjs';
 
 // room management classes
 class Room {

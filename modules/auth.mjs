@@ -83,9 +83,20 @@ export function changeDisplayName() {
     const finalName = sanitizeString(newName.trim());
     state.currentUser.username = finalName;
     
-    if (state.currentRoomStatus && state.currentRoomStatus.users) {
-        const userIndex = state.currentRoomStatus.users.findIndex(u => u.userId === state.currentUser.userId);
-        if (userIndex !== -1) state.currentRoomStatus.users[userIndex].username = finalName;
+    if (state.currentRoomStatus) {
+        if (state.currentRoomStatus.users) {
+            const userIndex = state.currentRoomStatus.users.findIndex(u => u.userId === state.currentUser.userId);
+            if (userIndex !== -1) state.currentRoomStatus.users[userIndex].username = finalName;
+        }
+        
+        if (state.currentRoomStatus.tasks) {
+            for (let task of state.currentRoomStatus.tasks) {
+                if (task.userId === state.currentUser.userId) {
+                    task.username = finalName;
+                }
+            }
+        }
+        
         renderRoom(state.currentRoomStatus);
     } else if (!state.currentRoomId) {
         const welcomeMsg = document.getElementById('welcome-msg');
@@ -111,7 +122,7 @@ export function changePassword() {
 
 export function changeDisplayColor(eventOrValue) {
     if (!state.currentUser) return;
-
+    
     const rawColor = (eventOrValue && eventOrValue.target) ? eventOrValue.target.value : eventOrValue;
     if (!rawColor) return;
 
@@ -119,9 +130,20 @@ export function changeDisplayColor(eventOrValue) {
 
     state.currentUser.color = newColor;
     
-    if (state.currentRoomStatus && state.currentRoomStatus.users) {
-        const userIndex = state.currentRoomStatus.users.findIndex(u => u.userId === state.currentUser.userId);
-        if (userIndex !== -1) state.currentRoomStatus.users[userIndex].color = newColor;
+    if (state.currentRoomStatus) {
+        if (state.currentRoomStatus.users) {
+            const userIndex = state.currentRoomStatus.users.findIndex(u => u.userId === state.currentUser.userId);
+            if (userIndex !== -1) state.currentRoomStatus.users[userIndex].color = newColor;
+        }
+        
+        if (state.currentRoomStatus.tasks) {
+            for (let task of state.currentRoomStatus.tasks) {
+                if (task.userId === state.currentUser.userId) {
+                    task.color = newColor;
+                }
+            }
+        }
+        
         renderRoom(state.currentRoomStatus);
     }
 

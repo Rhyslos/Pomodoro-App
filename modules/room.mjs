@@ -97,6 +97,13 @@ class Room {
                 break;
             }
         }
+
+        for (let task of this.tasks) {
+            if (task.userId === updatedUserData.userId) {
+                if (updatedUserData.color !== undefined) task.color = updatedUserData.color;
+                if (updatedUserData.username !== undefined) task.username = updatedUserData.username;
+            }
+        }
     }
 
     // Admin functions

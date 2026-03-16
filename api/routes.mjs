@@ -7,7 +7,7 @@ import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
 import { t, getLang } from '../lang/server_i18n.mjs';
 import { sanitizeString } from '../modules/sanitize.mjs';
-import { authRateLimiter, requireAuth } from './middleware.mjs';
+import { authRateLimiter, requireAuth } from '../modules/middleware.mjs';
 
 const router = express.Router();
 

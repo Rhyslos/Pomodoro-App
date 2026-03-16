@@ -1,12 +1,12 @@
-import { randomBytes, randomInt, randomUUID } from "node:crypto";
-
-// Room generation functions
+// room generation functions
 export function createRoomCode() {
     let RoomCode = "";
     const characters = "ABCDEFGHIJKLMNPQRSTUVWSYZ123456789";
+    const randomArray = new Uint32Array(6);
+    crypto.getRandomValues(randomArray);
 
     for (let i = 0; i < 6; i++) {
-        RoomCode += characters.charAt(randomInt(0, characters.length));
+        RoomCode += characters.charAt(randomArray[i] % characters.length);
 
         if (i === 2) {
             RoomCode += "-";
@@ -17,13 +17,15 @@ export function createRoomCode() {
 
 // ID generation functions
 export function createUserID() {
-    let userID = randomUUID();
-    return userID;
+    return crypto.randomUUID();
 }
 
+// ID generation functions
 export function createFriendCode() {
-    const bytes = randomBytes(6);
-    const hex = bytes.toString("hex").toUpperCase();
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    
+    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 
     const codeSections = {
         first:  hex.slice(0, 4),    

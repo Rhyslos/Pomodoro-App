@@ -39,7 +39,9 @@ export async function createSession() {
         longBreakTime: parseInt(document.getElementById('setting-long').value),
         targetSets: parseInt(document.getElementById('setting-sets').value),
         autoStart: document.getElementById('setting-autostart').checked,
-        roomName: sanitizeString(rawRoomName)
+        roomName: sanitizeString(rawRoomName),
+        showCode: document.getElementById('setting-show-code')?.checked || false,
+        debugMode: document.getElementById('setting-debug')?.checked || false
     };
 
     const room = await makeRequest("/api/sessions", "POST", { settings });

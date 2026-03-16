@@ -1,6 +1,5 @@
 import { pomodoroTimer } from './timer.mjs';
 
-// Room management classes
 class Room {
     constructor(roomId, hostUser, customSettings = {}) {
         this.id = roomId;
@@ -61,13 +60,43 @@ class Room {
         if (this.isLocked) return false;
         if (this.bannedUsers.has(user.userId)) return false;
 
+        for (let existingUser of this.users) {
+            if (existingUser.userId === user.userId) {
+                existingUser.username = user.username;
+                existingUser.color = user.color;
+                return true; 
+            }
+        }
+
         this.users.add(user);
         this.maxUsers = Math.max(this.maxUsers, this.users.size);
         return true;
     }
 
     leave(user) {
-        this.users.delete(user);
+        const targetId = user.userId || user;
+        
+        for (let existingUser of this.users) {
+            if (existingUser.userId === targetId) {
+                this.users.delete(existingUser);
+                break;
+            }
+        }
+    }
+
+    updateUserCache(updatedUserData) {
+        for (let user of this.users) {
+            if (user.userId === updatedUserData.userId) {
+                if (updatedUserData.color !== undefined) user.color = updatedUserData.color;
+                if (updatedUserData.username !== undefined) user.username = updatedUserData.username;
+                
+                if (this.host.userId === updatedUserData.userId) {
+                    this.host.color = user.color;
+                    this.host.username = user.username;
+                }
+                break;
+            }
+        }
     }
 
     // Admin functions

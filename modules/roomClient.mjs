@@ -42,7 +42,7 @@ export async function createSession() {
         roomName: sanitizeString(rawRoomName)
     };
 
-    const room = await makeRequest("/api/sessions", "POST", settings);
+    const room = await makeRequest("/api/sessions", "POST", { settings });
     
     if (room) {
         state.currentRoomId = room.id;
@@ -99,7 +99,7 @@ export async function endSession() {
 // timer action functions
 export function sendTimerAction(action) {
     if (!state.currentRoomId) return;
-    makeRequest(`/api/sessions/${state.currentRoomId}/timer`, "POST", { action: sanitizeString(action) });
+    makeRequest(`/api/sessions/${state.currentRoomId}/action`, "POST", { action: sanitizeString(action) });
 }
 
 // ui action functions
@@ -120,13 +120,8 @@ export async function createTask() {
     if (!taskName) return;
 
     await makeRequest(`/api/sessions/${state.currentRoomId}/tasks`, "POST", {
-        id: crypto.randomUUID(),
         name: taskName,
-        description: taskDesc,
-        userId: state.currentUser.userId,
-        username: state.currentUser.username,
-        color: state.currentUser.color,
-        completed: false
+        description: taskDesc
     });
 
     closeTaskModal();
@@ -135,7 +130,7 @@ export async function createTask() {
 // task functions
 export async function completeTask(taskId) {
     if (!state.currentRoomId) return;
-    await makeRequest(`/api/sessions/${state.currentRoomId}/tasks/${taskId}/complete`, "POST");
+    await makeRequest(`/api/sessions/${state.currentRoomId}/tasks/${taskId}`, "PATCH");
 }
 
 // admin functions

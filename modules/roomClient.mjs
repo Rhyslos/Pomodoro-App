@@ -1,6 +1,6 @@
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
-import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeTaskModal, closeAdminModal } from './ui.mjs';
+import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeTaskModal, closeAdminModal, showToast } from './ui.mjs';
 import { t } from '/lang/client_i18n.mjs';
 import { sanitizeString } from './sanitize.mjs';
 
@@ -18,17 +18,18 @@ export async function updateRoomStatus() {
         state.currentRoomId = null;
         state.currentRoomStatus = null;
         await showDashboardScreen();
-        alert(t("Session has ended or you were disconnected."));
+        showToast(t("Session has ended or you were disconnected."), true);
     }
 }
 
+// polling functions
 export function startPolling() {
     if (state.pollInterval) clearInterval(state.pollInterval);
     state.pollInterval = setInterval(updateRoomStatus, 3000);
     updateRoomStatus(); 
 }
 
-// user action functions
+// room action functions
 export async function createSession() {
     if (!state.currentUser) return;
 
@@ -66,11 +67,12 @@ export async function createSession() {
     }
 }
 
+// room action functions
 export async function joinRoom() {
     if (!state.currentUser) return;
     
     const codeInput = document.getElementById('roomCodeInput');
-    if (!codeInput || !codeInput.value) return alert(t("Please enter a room code"));
+    if (!codeInput || !codeInput.value) return showToast(t("Please enter a room code"), true);
     
     const code = sanitizeString(codeInput.value.trim().toUpperCase());
     const room = await makeRequest(`/api/sessions/${code}/join`, "POST");
@@ -83,6 +85,7 @@ export async function joinRoom() {
     }
 }
 
+// room action functions
 export async function leaveSession() {
     if (!state.currentRoomId || !state.currentUser) return;
 
@@ -95,6 +98,7 @@ export async function leaveSession() {
     await showDashboardScreen();
 }
 
+// room action functions
 export async function endSession() {
     if (!state.currentRoomId) return;
 
@@ -107,6 +111,7 @@ export async function endSession() {
     await showDashboardScreen();
 }
 
+// timer control functions
 export function sendTimerAction(action) {
     if (!state.currentRoomId || !state.currentRoomStatus) return;
 
@@ -128,10 +133,11 @@ export function sendTimerAction(action) {
     makeRequest(`/api/sessions/${state.currentRoomId}/action`, "POST", { action: sanitizeString(action) });
 }
 
+// user assistance functions
 export function copyRoomCode() {
     if (!state.currentRoomId) return;
     navigator.clipboard.writeText(state.currentRoomId).then(() => {
-        alert(t("Room code copied to clipboard!"));
+        showToast(t("Room code copied to clipboard!"));
     });
 }
 
@@ -142,7 +148,7 @@ export async function createTask() {
     const rawName = document.getElementById('task-name').value.trim();
     const rawDesc = document.getElementById('task-desc').value.trim();
     
-    if (!rawName) return alert(t("Task name is required"));
+    if (!rawName) return showToast(t("Task name is required"), true);
 
     const name = sanitizeString(rawName);
     const desc = sanitizeString(rawDesc);
@@ -167,6 +173,7 @@ export async function createTask() {
     }
 }
 
+// task management functions
 export function completeTask(taskId) {
     if (!state.currentRoomId || !state.currentRoomStatus) return;
 
@@ -202,6 +209,7 @@ export function handleUserClick(targetUserId, targetUserName) {
     }
 }
 
+// admin functions
 export function adminAction(action) {
     if (!state.currentRoomId || !state.currentUser || !state.adminTargetUser) return;
     
@@ -213,6 +221,7 @@ export function adminAction(action) {
     closeAdminModal();
 }
 
+// admin functions
 export function toggleRoomLock() {
     if (!state.currentRoomId || !state.currentUser || !state.currentRoomStatus) return;
     if (state.currentUser.userId !== state.currentRoomStatus.host.userId) return;
@@ -234,7 +243,7 @@ export async function addFakeUser() {
     }
 }
 
-// navigation functions
+// view functions
 export async function goHome() {
     if (state.currentUser) {
         if (state.currentRoomId) {

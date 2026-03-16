@@ -1,4 +1,5 @@
 import { t, getBrowserLang } from '/lang/client_i18n.mjs';
+import { showToast } from './ui.mjs';
 
 // network functions
 export async function makeRequest(url, method = "GET", body = null, responseType = "json") {
@@ -42,9 +43,9 @@ export async function makeRequest(url, method = "GET", body = null, responseType
         }
         
         if (error.name === 'TypeError') {
-            alert(t("Network connection lost. Please check your internet."));
+            showToast(t("Network connection lost. Please check your internet."), true);
         } else if (error.status !== 401) {
-            alert(`${t("Error:")} ${error.message}`);
+            showToast(`${t("Error:")} ${error.message}`, true);
         }
         throw error;
     }

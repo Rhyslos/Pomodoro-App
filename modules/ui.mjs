@@ -2,37 +2,30 @@ import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { t } from '/lang/client_i18n.mjs';
 
-// format functions
+// formatting functions
 export function formatTime(isoString) {
     if (!isoString) return '';
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// ui functions
+// view functions
 export async function loadView(viewName) {
-    console.log(`[Step 1] Requesting view: ${viewName}`);
-    
     const html = await makeRequest(`/api/views/${viewName}`, "GET", null, "text");
-    console.log(`[Step 2] HTML received. Length: ${html ? html.length : 'null'}`);
 
     if (html) {
         const container = document.getElementById('app-container');
-        console.log(`[Step 3] Container found:`, !!container);
 
         if (container) {
             container.innerHTML = html;
-            console.log(`[Step 4] HTML injected into DOM`);
-            
             translatePage();
-            console.log(`[Step 5] Translation complete`);
-            
             return true;
         }
     }
     return false;
 }
 
+// view functions
 export async function showDashboardScreen() {
     const loaded = await loadView('dashboard');
     
@@ -49,6 +42,7 @@ export async function showDashboardScreen() {
 // timer functions
 let localTimerInterval = null;
 
+// timer functions
 export function startLocalTimer(status) {
     if (localTimerInterval) clearInterval(localTimerInterval);
 
@@ -73,7 +67,7 @@ export function startLocalTimer(status) {
     }, 250);
 }
 
-// ui functions
+// rendering functions
 export function renderRoom(status) {
     const roomNameDisplay = document.getElementById('room-name-display');
     const roomCodeDisplay = document.getElementById('room-code-display');
@@ -117,14 +111,12 @@ export function renderRoom(status) {
         }
     }
 
-    // rendering function
     startLocalTimer(status);
     
     if (statusDisplay) {
         statusDisplay.innerText = t(status.timer.state.toUpperCase()) || status.timer.state.toUpperCase();
     }
 
-    // timer functions
     if (primaryBtn) {
         if (status.timer.state === 'idle' || status.timer.state === 'finished') {
             primaryBtn.innerHTML = t('Start');
@@ -138,7 +130,6 @@ export function renderRoom(status) {
         }
     }
 
-    // user rendering functions
     if (namesContainer && status.users) {
         const currentUsersStr = JSON.stringify(status.users.map(u => ({ n: u.username, c: u.color })).sort((a,b) => a.n.localeCompare(b.n)));
         
@@ -179,7 +170,6 @@ export function renderRoom(status) {
         }
     }
 
-    // task rendering functions
     const tasksContainer = document.getElementById('tasks-container');
     const tasksGrid = document.getElementById('tasks-grid');
 
@@ -241,7 +231,7 @@ export function renderRoom(status) {
     }
 }
 
-// settings functions
+// styling functions
 export function toggleSettings() {
     const menu = document.getElementById('settings-menu');
     if (menu) {
@@ -249,6 +239,7 @@ export function toggleSettings() {
     }
 }
 
+// styling functions
 export function toggleTheme() {
     document.body.classList.toggle('dark-theme');
     const isDark = document.body.classList.contains('dark-theme');
@@ -256,6 +247,7 @@ export function toggleTheme() {
     toggleSettings();
 }
 
+// styling functions
 export function triggerColorPicker() {
     const picker = document.getElementById('name-color-picker');
     if (picker) {
@@ -264,7 +256,7 @@ export function triggerColorPicker() {
     toggleSettings();
 }
 
-// settings functions
+// modal functions
 export function openCreateRoomModal() {
     const modal = document.getElementById('create-room-modal');
     if (modal) {
@@ -276,16 +268,19 @@ export function openCreateRoomModal() {
     }
 }
 
+// modal functions
 export function closeCreateRoomModal() {
     const modal = document.getElementById('create-room-modal');
     if (modal) modal.classList.add('hidden');
 }
 
+// modal functions
 export function closeDeleteModal() {
     const modal = document.getElementById('delete-account-modal');
     if (modal) modal.classList.add('hidden');
 }
 
+// modal functions
 export function openTaskModal() {
     const modal = document.getElementById('task-modal');
     if (modal) {
@@ -295,17 +290,19 @@ export function openTaskModal() {
     }
 }
 
+// modal functions
 export function closeTaskModal() {
     const modal = document.getElementById('task-modal');
     if (modal) modal.classList.add('hidden');
 }
 
+// modal functions
 export function closeAdminModal() {
     document.getElementById('admin-modal').classList.add('hidden');
     state.adminTargetUser = null;
 }
 
-// navigation functions
+// view functions
 export async function loadPolicy(policyType) {
     if (state.pollInterval) clearInterval(state.pollInterval);
     await loadView(policyType);
@@ -321,5 +318,108 @@ export function translatePage() {
     document.querySelectorAll('[data-t-placeholder]').forEach(el => {
         const key = el.getAttribute('data-t-placeholder');
         el.placeholder = t(key);
+    });
+}
+
+// notification functions
+export function showToast(message, isError = false) {
+    const toast = document.createElement('div');
+    toast.innerText = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.backgroundColor = isError ? '#e74c3c' : '#2ecc71';
+    toast.style.color = '#fff';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.zIndex = '9999';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    toast.style.transition = 'opacity 0.3s ease';
+    toast.style.fontFamily = 'inherit';
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// prompt functions
+export function showCustomPrompt(message, defaultValue = "") {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0'; 
+        overlay.style.left = '0'; 
+        overlay.style.width = '100%'; 
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        overlay.style.display = 'flex'; 
+        overlay.style.justifyContent = 'center'; 
+        overlay.style.alignItems = 'center';
+        overlay.style.zIndex = '10000';
+
+        const box = document.createElement('div');
+        box.style.backgroundColor = 'var(--bg-color, #ffffff)';
+        box.style.color = 'var(--text-color, #333333)';
+        box.style.padding = '24px'; 
+        box.style.borderRadius = '12px'; 
+        box.style.minWidth = '320px';
+        box.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+        box.style.fontFamily = 'inherit';
+
+        const msg = document.createElement('p'); 
+        msg.innerText = message; 
+        msg.style.marginBottom = '16px';
+        msg.style.fontWeight = '500';
+
+        const input = document.createElement('input'); 
+        input.type = 'text'; 
+        input.value = defaultValue; 
+        input.style.width = '100%'; 
+        input.style.marginBottom = '24px'; 
+        input.style.padding = '10px';
+        input.style.borderRadius = '6px';
+        input.style.border = '1px solid #ccc';
+        input.style.boxSizing = 'border-box';
+
+        const btnContainer = document.createElement('div'); 
+        btnContainer.style.display = 'flex'; 
+        btnContainer.style.justifyContent = 'flex-end'; 
+        btnContainer.style.gap = '12px';
+
+        const cancelBtn = document.createElement('button'); 
+        cancelBtn.innerText = t('Cancel') || 'Cancel';
+        cancelBtn.style.padding = '8px 16px';
+        cancelBtn.style.border = 'none';
+        cancelBtn.style.borderRadius = '6px';
+        cancelBtn.style.cursor = 'pointer';
+
+        const confirmBtn = document.createElement('button'); 
+        confirmBtn.innerText = 'OK';
+        confirmBtn.style.padding = '8px 16px';
+        confirmBtn.style.border = 'none';
+        confirmBtn.style.borderRadius = '6px';
+        confirmBtn.style.backgroundColor = '#2ecc71';
+        confirmBtn.style.color = '#fff';
+        confirmBtn.style.cursor = 'pointer';
+
+        const cleanup = () => document.body.removeChild(overlay);
+
+        cancelBtn.onclick = () => { cleanup(); resolve(null); };
+        confirmBtn.onclick = () => { cleanup(); resolve(input.value); };
+
+        btnContainer.appendChild(cancelBtn); 
+        btnContainer.appendChild(confirmBtn);
+        
+        box.appendChild(msg); 
+        box.appendChild(input); 
+        box.appendChild(btnContainer);
+        overlay.appendChild(box); 
+        
+        document.body.appendChild(overlay);
+        input.focus();
     });
 }

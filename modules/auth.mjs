@@ -1,12 +1,12 @@
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
-import { showDashboardScreen, loadView, toggleSettings, closeDeleteModal, renderRoom } from './ui.mjs';
+import { showDashboardScreen, loadView, toggleSettings, closeDeleteModal, renderRoom, showToast, showCustomPrompt } from './ui.mjs';
 import { t } from '/lang/client_i18n.mjs';
 import { sanitizeString } from './sanitize.mjs';
 
 // authentication functions
 export async function handleLogin(username, password) {
-    if (!username || !password) return alert(t("Please enter both username and password"));
+    if (!username || !password) return showToast(t("Please enter both username and password"), true);
 
     const safeUsername = sanitizeString(username);
 
@@ -20,8 +20,8 @@ export async function handleLogin(username, password) {
 
 // authentication functions
 export async function handleRegister(username, password, hasConsented) {
-    if (!username || !password) return alert(t("Please enter both username and password"));
-    if (!hasConsented) return alert(t("You must agree to the Terms of Service and Privacy Policy to create an account."));
+    if (!username || !password) return showToast(t("Please enter both username and password"), true);
+    if (!hasConsented) return showToast(t("You must agree to the Terms of Service and Privacy Policy to create an account."), true);
 
     const safeUsername = sanitizeString(username);
 
@@ -75,9 +75,9 @@ export async function confirmDeleteAccount() {
 }
 
 // profile settings functions
-export function changeDisplayName() {
+export async function changeDisplayName() {
     if (!state.currentUser) return;
-    const newName = prompt(t("Enter new display name:"), state.currentUser.username);
+    const newName = await showCustomPrompt(t("Enter new display name:"), state.currentUser.username);
     if (!newName || newName.trim() === "") return;
 
     const finalName = sanitizeString(newName.trim());
@@ -108,14 +108,14 @@ export function changeDisplayName() {
 }
 
 // profile settings functions
-export function changePassword() {
+export async function changePassword() {
     if (!state.currentUser) return;
-    const newPassword = prompt(t("Enter a new password:"));
+    const newPassword = await showCustomPrompt(t("Enter a new password:"));
     if (!newPassword || newPassword.trim() === "") return;
 
     toggleSettings();
     makeRequest("/api/users/me", "PATCH", { password: newPassword.trim() }).then(res => {
-        if (res) alert(t("Password updated successfully."));
+        if (res) showToast(t("Password updated successfully."));
     });
 }
 

@@ -112,6 +112,12 @@ class Room {
                 break;
             }
         }
+        for (let task of this.tasks) {
+            if (task.userId === updatedUserData.userId) {
+                task.username = updatedUserData.username || task.username;
+                task.color = updatedUserData.color || task.color;
+            }
+        }
         this.broadcast();
     }
 
@@ -158,6 +164,7 @@ class Room {
         const task = this.tasks.find(t => t.id === taskId);
         if (task && !task.completed) {
             task.completed = true;
+            task.completedAt = new Date().toISOString();
             this.telemetry.tasksCompleted++;
             this.broadcast();
         }

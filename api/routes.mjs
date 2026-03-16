@@ -180,7 +180,15 @@ router.post('/sessions/:roomId/leave', requireAuth, async (req, res) => {
 });
 
 router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     try {
+        const room = sessionManager.getSession(req.params.roomId);
+        if (!room) return res.status(404).json({ error: t("Room not found", lang) });
+        
+        if (room.host.userId !== req.user.userId) {
+            return res.status(403).json({ error: t("Unauthorized", lang) });
+        }
+
         await sessionManager.endSession(req.params.roomId);
         res.status(200).json({ message: "Session ended" });
     } catch (error) {

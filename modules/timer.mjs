@@ -1,4 +1,3 @@
-// State variables
 let timerState = {
     IDLE: "idle",
     WORK: "work",
@@ -6,7 +5,6 @@ let timerState = {
     FINISHED: "finished",
 }
 
-// Timer management classes
 class pomodoroTimer {
     constructor(workTime, breakTime, longBreakTime, targetSets, autoStart, task) {
         this.workTime = workTime;
@@ -18,6 +16,7 @@ class pomodoroTimer {
         
         this.currentSet = 0;
         this.remainingTime = this.workTime * 60 * 1000; 
+        this.targetEndTime = null;
         this.currentState = timerState.IDLE;
         this.isPaused = false;
         
@@ -25,12 +24,13 @@ class pomodoroTimer {
         this.lastUpdatedAt = null; 
     }
 
-    // Timer action functions
+    // timer action functions
     startTimer() {
         if (this.currentState !== timerState.IDLE && this.currentState !== timerState.FINISHED) return;
 
         this.currentState = timerState.WORK;
         this.remainingTime = this.workTime * 60 * 1000;
+        this.targetEndTime = Date.now() + this.remainingTime;
         this.isPaused = false;
         this.currentSet = 0;
         this.lastUpdatedAt = new Date().toISOString();
@@ -38,23 +38,32 @@ class pomodoroTimer {
         this.runInterval();
     }
 
+    // timer action functions
     pauseTimer() {
         if (this.intervalID) {
             clearInterval(this.intervalID);
             this.intervalID = null;
+            
+            if (!this.isPaused && this.targetEndTime) {
+                this.remainingTime = Math.max(0, this.targetEndTime - Date.now());
+            }
+            
             this.isPaused = true;
             this.lastUpdatedAt = new Date().toISOString();
         }
     }
 
+    // timer action functions
     resumeTimer() {
         if (this.isPaused && (this.currentState === timerState.WORK || this.currentState === timerState.BREAK)) {
             this.isPaused = false;
+            this.targetEndTime = Date.now() + this.remainingTime;
             this.lastUpdatedAt = new Date().toISOString();
             this.runInterval();
         }
     }
 
+    // timer action functions
     stopTimer() {
         if (this.intervalID) {
             clearInterval(this.intervalID);
@@ -63,15 +72,20 @@ class pomodoroTimer {
         this.currentState = timerState.IDLE;
         this.isPaused = false;
         this.remainingTime = this.workTime * 60 * 1000;
+        this.targetEndTime = null;
         this.currentSet = 0;
         this.lastUpdatedAt = null;
     }
 
+    // timer execution functions
     runInterval() {
         if (this.intervalID) clearInterval(this.intervalID);
 
         this.intervalID = setInterval(() => {
-            this.remainingTime -= 1000;
+            if (!this.isPaused && this.targetEndTime) {
+                this.remainingTime = Math.max(0, this.targetEndTime - Date.now());
+            }
+            
             this.lastUpdatedAt = new Date().toISOString();
 
             if (this.remainingTime <= 0) {
@@ -81,6 +95,7 @@ class pomodoroTimer {
         }, 1000);
     }
 
+    // timer execution functions
     handlePhaseChange() {
         if (this.currentState === timerState.WORK) {
             this.currentSet++;
@@ -97,21 +112,28 @@ class pomodoroTimer {
             this.remainingTime = this.workTime * 60 * 1000;
         }
 
+        this.targetEndTime = Date.now() + this.remainingTime;
         this.lastUpdatedAt = new Date().toISOString();
 
         if (this.autoStart) {
             this.runInterval();
         } else {
             this.isPaused = true;
+            this.targetEndTime = null; 
         }
     }
 
-    // Data retrieval functions
+    // data retrieval functions
     getStatus() {
+        let currentRemaining = this.remainingTime;
+        if (!this.isPaused && this.targetEndTime && this.currentState !== timerState.IDLE && this.currentState !== timerState.FINISHED) {
+            currentRemaining = Math.max(0, this.targetEndTime - Date.now());
+        }
+
         return {
             state: this.currentState,
             isPaused: this.isPaused,
-            remaining: Math.ceil(this.remainingTime / 1000),
+            remaining: Math.ceil(currentRemaining / 1000),
             currentSet: this.currentSet,
             targetSets: this.targetSets,
             task: this.task,
@@ -120,5 +142,4 @@ class pomodoroTimer {
     }
 }
 
-// Export variables
 export { pomodoroTimer };

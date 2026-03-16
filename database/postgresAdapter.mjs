@@ -4,17 +4,27 @@ import { DBAdapter } from './dbAdapter.mjs';
 // initialization variables
 const { Pool } = pkg;
 
+// database formatting functions
+function mapUserRow(row) {
+    if (!row) return null;
+    return {
+        userId: row.id,
+        username: row.username,
+        passwordHash: row.password_hash,
+        salt: row.salt,
+        color: row.color,
+        createdAt: row.created_at
+    };
+}
+
 export class PostgresAdapter extends DBAdapter {
     constructor(connectionString) {
         super();
-        
         const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
 
         this.pool = new Pool({
             connectionString: connectionString,
-            ssl: isLocal ? false : {
-                rejectUnauthorized: false
-            }
+            ssl: isLocal ? false : { rejectUnauthorized: false }
         });
     }
 
@@ -39,12 +49,13 @@ export class PostgresAdapter extends DBAdapter {
     // retrieval functions
     async getUserByUsername(username) {
         const result = await this.pool.query('SELECT * FROM users WHERE username = $1', [username]);
-        return result.rows[0] || null;
+        return mapUserRow(result.rows[0]);
     }
 
+    // retrieval functions
     async getUserById(userId) {
         const result = await this.pool.query('SELECT * FROM users WHERE id = $1', [userId]);
-        return result.rows[0] || null;
+        return mapUserRow(result.rows[0]);
     }
 
     // modification functions
@@ -56,11 +67,11 @@ export class PostgresAdapter extends DBAdapter {
         `;
         const values = [user.userId, user.username, user.passwordHash, user.salt, user.color, user.createdAt];
         const result = await this.pool.query(query, values);
-        return result.rows[0];
+        return mapUserRow(result.rows[0]);
     }
 
+    // modification functions
     async updateUser(userId, updates) {
-        // dynamic query generation functions
         const fields = [];
         const values = [];
         let index = 1;
@@ -86,9 +97,10 @@ export class PostgresAdapter extends DBAdapter {
         const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${index} RETURNING *`;
         
         const result = await this.pool.query(query, values);
-        return result.rows[0];
+        return mapUserRow(result.rows[0]);
     }
 
+    // modification functions
     async deleteUser(userId) {
         await this.pool.query('DELETE FROM users WHERE id = $1', [userId]);
     }

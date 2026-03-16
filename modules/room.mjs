@@ -2,23 +2,18 @@ import { pomodoroTimer } from './timer.mjs';
 
 // room management classes
 class Room {
-    constructor(workTime, breakTime, longBreakTime, targetSets, autoStart, task, onStateChange) {
-        this.workTime = workTime;
-        this.breakTime = breakTime;
-        this.longBreakTime = longBreakTime;
-        this.targetSets = targetSets;
-        this.autoStart = autoStart;
-        this.task = task || "Study Group";
-        this.onStateChange = onStateChange;
+    constructor(roomId, hostUser, customSettings = {}) {
+        this.id = roomId;
+        this.host = hostUser;
+        this.users = new Set([hostUser]); 
+        this.maxUsers = 1;
+        this.clients = new Set(); 
         
-        this.currentSet = 0;
-        this.remainingTime = this.workTime * 60 * 1000; 
-        this.targetEndTime = null;
-        this.currentState = timerState.IDLE;
-        this.isPaused = false;
-        
-        this.intervalID = null;
-        this.lastUpdatedAt = null; 
+        this.startTime = new Date().toISOString();
+        this.isLocked = false;
+        this.bannedUsers = new Set();
+        this.tasks = [];
+        this.telemetry = { tasksCreated: 0, tasksCompleted: 0 };
 
         this.settings = {
             workTime: 25, 
@@ -34,7 +29,7 @@ class Room {
         };
 
         // timer initialization functions
-        this.timer = new pomodoroTimer(
+        this.timer = new PomodoroTimer(
             this.settings.workTime, 
             this.settings.breakTime, 
             this.settings.longBreakTime,
@@ -65,7 +60,7 @@ class Room {
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
         this.timer.stopTimer(); 
-        this.timer = new pomodoroTimer(
+        this.timer = new PomodoroTimer(
             this.settings.workTime, 
             this.settings.breakTime, 
             this.settings.longBreakTime,

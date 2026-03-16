@@ -1,3 +1,4 @@
+// timer definition variables
 let timerState = {
     IDLE: "idle",
     WORK: "work",
@@ -5,8 +6,9 @@ let timerState = {
     FINISHED: "finished",
 }
 
-class pomodoroTimer {
-    constructor(workTime, breakTime, longBreakTime, targetSets, autoStart, task) {
+// timer execution classes
+class PomodoroTimer {
+    constructor(workTime, breakTime, longBreakTime, targetSets, autoStart, task, onStateChange) {
         this.workTime = workTime;
         this.breakTime = breakTime;
         this.longBreakTime = longBreakTime;
@@ -145,4 +147,5 @@ class pomodoroTimer {
     }
 }
 
-export { pomodoroTimer };
+// export functions
+export { PomodoroTimer };

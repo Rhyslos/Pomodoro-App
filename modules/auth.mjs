@@ -1,4 +1,3 @@
-// user action functions
 import { makeRequest } from './network.mjs';
 import { state } from './state.mjs';
 import { showDashboardScreen, loadView, toggleSettings, closeDeleteModal, renderRoom } from './ui.mjs';
@@ -10,9 +9,8 @@ export async function handleLogin(username, password) {
     if (!username || !password) return alert(t("Please enter both username and password"));
 
     const safeUsername = sanitizeString(username);
-    const safePassword = sanitizeString(password);
 
-    const response = await makeRequest("/api/users/login", "POST", { username: safeUsername, password: safePassword });
+    const response = await makeRequest("/api/users/login", "POST", { username: safeUsername, password: password });
     
     if (response) {
         state.currentUser = response.user;
@@ -20,14 +18,14 @@ export async function handleLogin(username, password) {
     }
 }
 
+// authentication functions
 export async function handleRegister(username, password, hasConsented) {
     if (!username || !password) return alert(t("Please enter both username and password"));
     if (!hasConsented) return alert(t("You must agree to the Terms of Service and Privacy Policy to create an account."));
 
     const safeUsername = sanitizeString(username);
-    const safePassword = sanitizeString(password);
 
-    const response = await makeRequest("/api/users/register", "POST", { username: safeUsername, password: safePassword });
+    const response = await makeRequest("/api/users/register", "POST", { username: safeUsername, password: password });
     
     if (response) {
         state.currentUser = response.user;
@@ -48,6 +46,7 @@ export async function logoutAccount() {
     await loadView('login');
 }
 
+// account lifecycle functions
 export function deleteAccount() {
     if (!state.currentUser) return;
     
@@ -58,6 +57,7 @@ export function deleteAccount() {
     if (modal) modal.classList.remove('hidden');
 }
 
+// account lifecycle functions
 export async function confirmDeleteAccount() {
     if (!state.currentUser) return;
 
@@ -107,19 +107,19 @@ export function changeDisplayName() {
     makeRequest("/api/users/me", "PATCH", { username: finalName });
 }
 
+// profile settings functions
 export function changePassword() {
     if (!state.currentUser) return;
     const newPassword = prompt(t("Enter a new password:"));
     if (!newPassword || newPassword.trim() === "") return;
 
-    const safePassword = sanitizeString(newPassword.trim());
-
     toggleSettings();
-    makeRequest("/api/users/me", "PATCH", { password: safePassword }).then(res => {
+    makeRequest("/api/users/me", "PATCH", { password: newPassword.trim() }).then(res => {
         if (res) alert(t("Password updated successfully."));
     });
 }
 
+// profile settings functions
 export function changeDisplayColor(eventOrValue) {
     if (!state.currentUser) return;
     

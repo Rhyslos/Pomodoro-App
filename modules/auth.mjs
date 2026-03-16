@@ -109,9 +109,13 @@ export function changePassword() {
     });
 }
 
-export function changeDisplayColor(event) {
+export function changeDisplayColor(eventOrValue) {
     if (!state.currentUser) return;
-    const newColor = sanitizeString(event.target.value);
+
+    const rawColor = (eventOrValue && eventOrValue.target) ? eventOrValue.target.value : eventOrValue;
+    if (!rawColor) return;
+
+    const newColor = sanitizeString(rawColor);
 
     state.currentUser.color = newColor;
     

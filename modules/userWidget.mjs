@@ -1,8 +1,7 @@
 import { t } from '/lang/client_i18n.mjs';
 import { handleLogin, handleRegister, deleteAccount, changeDisplayName, changePassword } from './auth.mjs';
-import { translatePage } from './ui.mjs'; // 1. Add this import
+import { translatePage } from './ui.mjs';
 
-// component functions
 class UserWidget extends HTMLElement {
     connectedCallback() {
         this.mode = this.getAttribute('mode') || 'auth';

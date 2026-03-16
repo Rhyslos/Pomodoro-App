@@ -4,13 +4,12 @@ import { DBAdapter } from './dbAdapter.mjs';
 // initialization variables
 const { Pool } = pkg;
 
-// database execution functions
 export class PostgresAdapter extends DBAdapter {
     constructor(connectionString) {
         super();
         this.pool = new Pool({
             connectionString: connectionString,
-            ssl: { rejectUnauthorized: false } 
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false
         });
     }
 

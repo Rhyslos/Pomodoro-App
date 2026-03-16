@@ -7,72 +7,9 @@ import { userManager } from '../singletons/userManager.mjs';
 import { sessionManager } from '../singletons/sessionManager.mjs';
 import { t, getLang } from '../lang/server_i18n.mjs';
 import { sanitizeString } from '../modules/sanitize.mjs';
+import { authRateLimiter, requireAuth } from './middleware.mjs';
 
 const router = express.Router();
-
-// rate limiting variables
-const authAttempts = new Map();
-
-// middleware functions
-const parseCookies = (request) => {
-    const list = {};
-    const cookieHeader = request.headers?.cookie;
-    if (!cookieHeader) return list;
-
-    cookieHeader.split(';').forEach(cookie => {
-        let [name, ...rest] = cookie.split('=');
-        name = name?.trim();
-        if (!name) return;
-        const value = rest.join('=').trim();
-        if (!value) return;
-        list[name] = decodeURIComponent(value);
-    });
-    return list;
-};
-
-const authRateLimiter = (req, res, next) => {
-    const lang = getLang(req.headers['accept-language']);
-    const ip = req.ip;
-    const now = Date.now();
-    const windowMs = 900000; 
-    const maxAttempts = 5;
-
-    if (!authAttempts.has(ip)) {
-        authAttempts.set(ip, { count: 1, firstAttempt: now });
-        return next();
-    }
-
-    const record = authAttempts.get(ip);
-
-    if (now - record.firstAttempt > windowMs) {
-        authAttempts.set(ip, { count: 1, firstAttempt: now });
-        return next();
-    }
-
-    record.count++;
-
-    if (record.count > maxAttempts) {
-        return res.status(429).json({ error: t("Too many attempts. Please try again later.", lang) });
-    }
-
-    next();
-};
-
-const requireAuth = async (req, res, next) => {
-    const lang = getLang(req.headers['accept-language']);
-    
-    const cookies = parseCookies(req);
-    const token = cookies.pomodoro_token || req.headers.authorization?.split(' ')[1];
-    
-    if (!token) return res.status(401).json({ error: t("Unauthorized", lang) });
-
-    const user = await userManager.getUserByToken(token);
-    if (!user) return res.status(401).json({ error: t("Invalid session", lang) });
-
-    req.user = user;
-    req.token = token;
-    next();
-};
 
 // view routing functions
 router.get('/views/:viewName', async (req, res) => {
@@ -84,13 +21,7 @@ router.get('/views/:viewName', async (req, res) => {
             return res.status(400).send(t("Invalid view name", lang));
         }
 
-        const baseViewsDir = path.join(process.cwd(), 'views');
-        const viewPath = path.join(baseViewsDir, `${viewName}.html`);
-        
-        if (!viewPath.startsWith(baseViewsDir)) {
-            return res.status(403).send(t("Forbidden", lang));
-        }
-
+        const viewPath = path.join(process.cwd(), 'views', `${viewName}.html`);
         const html = await fs.readFile(viewPath, 'utf-8');
         res.send(html);
     } catch (error) {
@@ -133,8 +64,6 @@ router.post('/users/login', authRateLimiter, async (req, res) => {
         const session = await userManager.loginUser(username, password);
         
         if (!session) return res.status(401).json({ error: t("Invalid credentials", lang) });
-        
-        authAttempts.delete(req.ip);
         
         res.cookie('pomodoro_token', session.token, {
             httpOnly: true,
@@ -190,9 +119,7 @@ router.delete('/users/me', requireAuth, async (req, res) => {
 
 // session routing functions
 router.post('/sessions', requireAuth, async (req, res) => {
-    const lang = getLang(req.headers['accept-language']);
     const settings = req.body.settings || {}; 
-    
     const room = await sessionManager.createSession(req.user, settings);
     res.status(201).json(room.getStatus());
 });
@@ -249,7 +176,7 @@ router.post('/sessions/:roomId/action', requireAuth, (req, res) => {
     const { roomId } = req.params;
     
     const action = sanitizeString(req.body.action); 
-    const payload = req.body.payload || {}; // sanitizePayload removed
+    const payload = req.body.payload || {};
     
     const room = sessionManager.getSession(roomId);
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
@@ -278,8 +205,8 @@ router.post('/sessions/:roomId/tasks', requireAuth, (req, res) => {
         userId: req.user.userId,
         username: req.user.username,
         color: req.user.color,
-        name: sanitizeString(req.body.name), // sanitizePayload replaced with sanitizeString
-        description: sanitizeString(req.body.description), // sanitizePayload replaced with sanitizeString
+        name: sanitizeString(req.body.name), 
+        description: sanitizeString(req.body.description), 
         completed: false,
         createdAt: new Date().toISOString()
     };

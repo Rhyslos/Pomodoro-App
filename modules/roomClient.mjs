@@ -57,7 +57,10 @@ export async function createSession() {
 
 // room action functions
 export async function joinRoom() {
-    const roomIdInput = document.getElementById('join-room-id');
+    const roomIdInput = document.getElementById('roomCodeInput');
+    
+    if (!roomIdInput) return;
+
     const roomId = sanitizeString(roomIdInput.value.trim().toUpperCase());
 
     if (!roomId) return;

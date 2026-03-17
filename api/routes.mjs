@@ -90,18 +90,25 @@ router.get('/users/me', requireAuth, (req, res) => {
 
 router.patch('/users/me', requireAuth, async (req, res) => {
     try {
-        const updates = req.body || {};
-        
-        if (updates.username) updates.username = sanitizeString(updates.username);
-        if (updates.color) updates.color = sanitizeString(updates.color);
-        
+        const updates = req.body;
+        // Update the database
         const updatedUser = await userManager.updateUser(req.user.userId, updates);
         
-        for (const room of sessionManager.sessions.values()) {
-            room.updateUserCache(updatedUser);
+        if (!updatedUser) return res.status(404).json({ error: "User not found" });
+
+        // NEW: Tell the active session about the profile change so it broadcasts via SSE
+        for (const [roomId, room] of sessionManager.sessions.entries()) {
+            // Check if the user is in this room
+            for (let user of room.users) {
+                if (user.userId === updatedUser.userId) {
+                    // This triggers room.broadcast() instantly to everyone
+                    room.updateUserCache(updatedUser); 
+                    break;
+                }
+            }
         }
 
-        res.json(updatedUser);
+        res.status(200).json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

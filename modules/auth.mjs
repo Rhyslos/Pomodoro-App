@@ -120,7 +120,7 @@ export async function changePassword() {
 }
 
 // profile settings functions
-export function changeDisplayColor(eventOrValue) {
+export async function changeDisplayColor(eventOrValue) {
     if (!state.currentUser) return;
     
     const rawColor = (eventOrValue && eventOrValue.target) ? eventOrValue.target.value : eventOrValue;
@@ -128,24 +128,12 @@ export function changeDisplayColor(eventOrValue) {
 
     const newColor = sanitizeString(rawColor);
 
-    state.currentUser.color = newColor;
+    // 1. Send the update to the server
+    const updatedUser = await makeRequest("/api/users/me", "PATCH", { color: newColor });
     
-    if (state.currentRoomStatus) {
-        if (state.currentRoomStatus.users) {
-            const userIndex = state.currentRoomStatus.users.findIndex(u => u.userId === state.currentUser.userId);
-            if (userIndex !== -1) state.currentRoomStatus.users[userIndex].color = newColor;
-        }
-        
-        if (state.currentRoomStatus.tasks) {
-            for (let task of state.currentRoomStatus.tasks) {
-                if (task.userId === state.currentUser.userId) {
-                    task.color = newColor;
-                }
-            }
-        }
-        
-        renderRoom(state.currentRoomStatus);
+    if (updatedUser) {
+        // 2. Update the local auth state ONLY
+        state.currentUser.color = updatedUser.color;
+        // 3. DO NOT mutate state.currentRoomStatus. The server's SSE will handle the room UI.
     }
-
-    makeRequest("/api/users/me", "PATCH", { color: newColor });
 }

@@ -10,6 +10,11 @@ export function startSSE() {
         state.eventSource.close();
     }
 
+    let isUnloading = false;
+        window.addEventListener('beforeunload', () => {
+        isUnloading = true;
+    });
+    
     state.eventSource = new EventSource(`/api/sessions/${state.currentRoomId}/events`);
 
     state.eventSource.onmessage = async (event) => {
@@ -33,10 +38,13 @@ export function startSSE() {
     };
 
     state.eventSource.onerror = async () => {
+        if (isUnloading) return; 
+
         state.eventSource.close();
         state.currentRoomId = null;
         state.currentRoomStatus = null;
         sessionStorage.removeItem('pomodoroRoom');
+        
         await showDashboardScreen();
         showToast(t("Session has ended or you were disconnected."), true);
     };

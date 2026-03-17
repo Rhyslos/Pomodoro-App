@@ -12,8 +12,22 @@ export function startSSE() {
 
     state.eventSource = new EventSource(`/api/sessions/${state.currentRoomId}/events`);
 
-    state.eventSource.onmessage = (event) => {
+    state.eventSource.onmessage = async (event) => {
         const status = JSON.parse(event.data);
+        
+        const isStillInRoom = status.users.some(u => u.userId === state.currentUser.userId);
+        
+        if (!isStillInRoom) {
+            state.eventSource.close();
+            state.currentRoomId = null;
+            state.currentRoomStatus = null;
+            sessionStorage.removeItem('pomodoroRoom');
+            
+            await showDashboardScreen();
+            showToast(t("You have been removed from the session."), true);
+            return;
+        }
+
         state.currentRoomStatus = status;
         renderRoom(status);
     };
@@ -22,11 +36,11 @@ export function startSSE() {
         state.eventSource.close();
         state.currentRoomId = null;
         state.currentRoomStatus = null;
+        sessionStorage.removeItem('pomodoroRoom');
         await showDashboardScreen();
         showToast(t("Session has ended or you were disconnected."), true);
     };
 }
-
 // room action functions
 export async function createSession() {
     if (!state.currentUser) return;
@@ -48,7 +62,7 @@ export async function createSession() {
     
     if (room) {
         state.currentRoomId = room.id;
-        sessionStorage.setItem('pomodoro_room', room.id);
+        sessionStorage.setItem('pomodoroRoom', room.id);
         closeCreateRoomModal();
         const loaded = await loadView('room');
         if (loaded) startSSE();
@@ -69,7 +83,7 @@ export async function joinRoom() {
     
     if (room) {
         state.currentRoomId = room.id;
-        sessionStorage.setItem('pomodoro_room', room.id);
+        sessionStorage.setItem('pomodoroRoom', room.id);
         const loaded = await loadView('room');
         if (loaded) startSSE();
     }
@@ -82,7 +96,7 @@ export async function leaveSession() {
     await makeRequest(`/api/sessions/${state.currentRoomId}/leave`, "POST");
     state.currentRoomId = null;
     state.currentRoomStatus = null;
-    sessionStorage.removeItem('pomodoro_room');
+    sessionStorage.removeItem('pomodoroRoom');
     
     if (state.eventSource) state.eventSource.close();
     await showDashboardScreen();
@@ -95,7 +109,7 @@ export async function endSession() {
     await makeRequest(`/api/sessions/${state.currentRoomId}`, "DELETE");
     state.currentRoomId = null;
     state.currentRoomStatus = null;
-    sessionStorage.removeItem('pomodoro_room');
+    sessionStorage.removeItem('pomodoroRoom');
     
     if (state.eventSource) state.eventSource.close();
     await showDashboardScreen();

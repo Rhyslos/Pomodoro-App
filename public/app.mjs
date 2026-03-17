@@ -17,7 +17,7 @@ async function initApp() {
         if (user) {
             state.currentUser = user;
             
-            const savedRoom = sessionStorage.getItem('pomodoro_room');
+            const savedRoom = sessionStorage.getItem('pomodoroRoom');
             if (savedRoom) {
                 state.currentRoomId = savedRoom;
                 const loaded = await loadView('room');
@@ -34,7 +34,7 @@ async function initApp() {
         console.log("Not logged in or session expired.");
     }
     
-    sessionStorage.removeItem('pomodoro_room');
+    sessionStorage.removeItem('pomodoroRoom');
     await loadView('login');
 }
 

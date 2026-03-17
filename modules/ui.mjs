@@ -42,19 +42,21 @@ export async function showDashboardScreen() {
 // timer functions
 let localTimerInterval = null;
 
-// timer functions
 export function startLocalTimer(status) {
     if (localTimerInterval) clearInterval(localTimerInterval);
 
     const timerDisplay = document.getElementById('timer-display');
     if (!timerDisplay) return;
 
-    localTimerInterval = setInterval(() => {
-        let currentRemaining = status.timer.remaining;
+    const localStartTime = Date.now();
+    const initialRemaining = status.timer.remaining;
 
-        if (status.timer.state !== 'idle' && !status.timer.isPaused && status.timer.lastUpdatedAt) {
-            const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(status.timer.lastUpdatedAt).getTime()) / 1000));
-            currentRemaining = Math.max(0, status.timer.remaining - elapsedSeconds);
+    localTimerInterval = setInterval(() => {
+        let currentRemaining = initialRemaining;
+
+        if (status.timer.state !== 'idle' && !status.timer.isPaused) {
+            const elapsedSeconds = Math.floor((Date.now() - localStartTime) / 1000);
+            currentRemaining = Math.max(0, initialRemaining - elapsedSeconds);
         }
 
         const minutes = Math.floor(currentRemaining / 60);
@@ -66,6 +68,7 @@ export function startLocalTimer(status) {
         }
     }, 250);
 }
+
 // rendering functions
 export function renderRoom(status) {
     const roomNameDisplay = document.getElementById('room-name-display');

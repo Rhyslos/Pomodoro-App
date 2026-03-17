@@ -9,7 +9,6 @@ export async function handleLogin(username, password) {
     if (!username || !password) return showToast(t("Please enter both username and password"), true);
 
     const safeUsername = sanitizeString(username);
-
     const response = await makeRequest("/api/users/login", "POST", { username: safeUsername, password: password });
     
     if (response) {
@@ -24,7 +23,6 @@ export async function handleRegister(username, password, hasConsented) {
     if (!hasConsented) return showToast(t("You must agree to the Terms of Service and Privacy Policy to create an account."), true);
 
     const safeUsername = sanitizeString(username);
-
     const response = await makeRequest("/api/users/register", "POST", { username: safeUsername, password: password });
     
     if (response) {
@@ -68,7 +66,7 @@ export async function confirmDeleteAccount() {
     state.currentRoomStatus = null;
     
     closeDeleteModal();
-    
+
     if (state.eventSource) state.eventSource.close();
     
     await loadView('login');
@@ -81,16 +79,11 @@ export async function changeDisplayName() {
     if (!newName || newName.trim() === "") return;
 
     const finalName = sanitizeString(newName.trim());
-    
-    // 1. Send the update to the server and await confirmation
     const updatedUser = await makeRequest("/api/users/me", "PATCH", { username: finalName });
     
     if (updatedUser) {
-        // 2. Update the base local auth state
         state.currentUser.username = updatedUser.username;
         
-        // 3. If on the dashboard (no room), update the welcome message manually.
-        // If in a room, do nothing. The server's SSE will automatically redraw the room.
         if (!state.currentRoomId) {
             const welcomeMsg = document.getElementById('welcome-msg');
             if (welcomeMsg) welcomeMsg.innerText = `Welcome, ${state.currentUser.username}`;
@@ -115,18 +108,14 @@ export async function changePassword() {
 // profile settings functions
 export async function changeDisplayColor(eventOrValue) {
     if (!state.currentUser) return;
-    
     const rawColor = (eventOrValue && eventOrValue.target) ? eventOrValue.target.value : eventOrValue;
+
     if (!rawColor) return;
-
+    
     const newColor = sanitizeString(rawColor);
-
-    // 1. Send the update to the server
     const updatedUser = await makeRequest("/api/users/me", "PATCH", { color: newColor });
     
     if (updatedUser) {
-        // 2. Update the local auth state ONLY
         state.currentUser.color = updatedUser.color;
-        // 3. DO NOT mutate state.currentRoomStatus. The server's SSE will handle the room UI.
     }
 }

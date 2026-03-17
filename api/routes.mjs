@@ -200,6 +200,8 @@ router.delete('/sessions/:roomId', requireAuth, async (req, res) => {
             return res.status(403).json({ error: t("Unauthorized", lang) });
         }
 
+        room.terminate(); 
+
         await sessionManager.endSession(req.params.roomId);
         res.status(200).json({ message: "Session ended" });
     } catch (error) {

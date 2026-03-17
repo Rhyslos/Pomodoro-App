@@ -68,6 +68,18 @@ class Room {
         }
     }
 
+    // room teardown function
+    terminate() {
+        this.timer.stopTimer();
+        
+        for (let client of this.clients) {
+            if (!client.writableEnded && !client.destroyed) {
+                client.end(); 
+            }
+        }
+        this.clients.clear();
+    }
+
     // broadcasting functions
     broadcast() {
         const data = `data: ${JSON.stringify(this.getStatus())}\n\n`;
@@ -121,6 +133,13 @@ class Room {
         for (let existingUser of this.users) {
             if (existingUser.userId === targetId) {
                 this.users.delete(existingUser);
+                
+                for (let client of this.clients) {
+                    if (client.userId === targetId && !client.writableEnded && !client.destroyed) {
+                        client.end();
+                    }
+                }
+
                 this.broadcast();
                 break;
             }

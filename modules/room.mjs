@@ -8,6 +8,7 @@ class Room {
         this.users = new Set([hostUser]); 
         this.maxUsers = 1;
         this.clients = new Set(); 
+        this.userConnections = new Map();
         
         this.startTime = new Date().toISOString();
         this.isLocked = false;
@@ -41,19 +42,42 @@ class Room {
     }
 
     // connection functions
-    addClient(res) {
+    addClient(res, userId) {
         this.clients.add(res);
+        res.userId = userId;
+        
+        const currentConnections = this.userConnections.get(userId) || 0;
+        this.userConnections.set(userId, currentConnections + 1);
     }
 
     // connection functions
     removeClient(res) {
         this.clients.delete(res);
+        
+        if (res.userId) {
+            const currentConnections = this.userConnections.get(res.userId) || 1;
+            this.userConnections.set(res.userId, currentConnections - 1);
+            
+            if (currentConnections - 1 <= 0) {
+                setTimeout(() => {
+                    if (this.userConnections.get(res.userId) <= 0) {
+                        this.leave(res.userId); 
+                    }
+                }, 3000);
+            }
+        }
     }
 
     // broadcasting functions
     broadcast() {
         const data = `data: ${JSON.stringify(this.getStatus())}\n\n`;
-        this.clients.forEach(client => client.write(data));
+        for (let client of this.clients) {
+            if (client.writableEnded || client.destroyed) {
+                this.removeClient(client);
+            } else {
+                client.write(data);
+            }
+        }
     }
 
     // settings functions
@@ -203,4 +227,5 @@ class Room {
     }
 }
 
+// export functions
 export { Room };

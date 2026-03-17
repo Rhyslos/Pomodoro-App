@@ -91,17 +91,13 @@ router.get('/users/me', requireAuth, (req, res) => {
 router.patch('/users/me', requireAuth, async (req, res) => {
     try {
         const updates = req.body;
-        // Update the database
         const updatedUser = await userManager.updateUser(req.user.userId, updates);
         
         if (!updatedUser) return res.status(404).json({ error: "User not found" });
 
-        // NEW: Tell the active session about the profile change so it broadcasts via SSE
         for (const [roomId, room] of sessionManager.sessions.entries()) {
-            // Check if the user is in this room
             for (let user of room.users) {
                 if (user.userId === updatedUser.userId) {
-                    // This triggers room.broadcast() instantly to everyone
                     room.updateUserCache(updatedUser); 
                     break;
                 }
@@ -152,17 +148,20 @@ router.get('/sessions/:roomId', requireAuth, (req, res) => {
 });
 
 router.get('/sessions/:roomId/events', requireAuth, (req, res) => {
+    const lang = getLang(req.headers['accept-language']);
     const room = sessionManager.getSession(req.params.roomId);
-    if (!room) return res.status(404).end();
+    
+    if (!room) return res.status(404).json({ error: t("Room not found", lang) });
 
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    });
 
     res.write(`data: ${JSON.stringify(room.getStatus())}\n\n`);
 
-    room.addClient(res);
+    room.addClient(res, req.user.userId);
 
     req.on('close', () => {
         room.removeClient(res);
@@ -282,7 +281,7 @@ router.post('/sessions/:roomId/admin', requireAuth, (req, res) => {
     
     const targetId = sanitizeString(req.body.targetId);
     const action = sanitizeString(req.body.action);
-    
+
     const room = sessionManager.getSession(req.params.roomId);
     
     if (!room) return res.status(404).json({ error: t("Room not found", lang) });
@@ -302,7 +301,6 @@ router.post('/sessions/:roomId/debug/fake-user', requireAuth, async (req, res) =
     try {
         const randomId = Math.floor(Math.random() * 1000);
         const fakeName = `TestUser_${randomId}`;
-        
         const fakeUser = await userManager.createUser(fakeName, "password");
         if (!fakeUser) return res.status(500).json({ error: t("Failed to generate user", lang) });
 

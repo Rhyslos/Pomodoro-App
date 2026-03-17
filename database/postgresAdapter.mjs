@@ -80,10 +80,12 @@ export class PostgresAdapter extends DBAdapter {
             fields.push(`username = $${index++}`);
             values.push(updates.username);
         }
+
         if (updates.color) {
             fields.push(`color = $${index++}`);
             values.push(updates.color);
         }
+
         if (updates.passwordHash) {
             fields.push(`password_hash = $${index++}`);
             values.push(updates.passwordHash);
@@ -95,7 +97,7 @@ export class PostgresAdapter extends DBAdapter {
 
         values.push(userId);
         const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${index} RETURNING *`;
-        
+
         const result = await this.pool.query(query, values);
         return mapUserRow(result.rows[0]);
     }

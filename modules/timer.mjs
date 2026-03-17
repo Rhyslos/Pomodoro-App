@@ -9,34 +9,34 @@ let timerState = {
 // timer execution classes
 class PomodoroTimer {
     constructor(workTime, breakTime, longBreakTime, targetSets, autoStart, task, onStateChange) {
-        this.workTime = workTime;
-        this.breakTime = breakTime;
-        this.longBreakTime = longBreakTime;
-        this.targetSets = targetSets;
-        this.autoStart = autoStart;
-        this.task = task || "Study Group";
-        this.onStateChange = onStateChange;
+        this.workTime       = workTime;
+        this.breakTime      = breakTime;
+        this.longBreakTime  = longBreakTime;
+        this.targetSets     = targetSets;
+        this.autoStart      = autoStart;
+        this.task           = task || "Study Group";
+        this.onStateChange  = onStateChange;
         
-        this.currentSet = 0;
-        this.remainingTime = this.workTime * 60 * 1000; 
-        this.targetEndTime = null;
-        this.currentState = timerState.IDLE;
-        this.isPaused = false;
+        this.currentSet     = 0;
+        this.remainingTime  = this.workTime * 60 * 1000; 
+        this.targetEndTime  = null;
+        this.currentState   = timerState.IDLE;
+        this.isPaused       = false;
         
-        this.intervalID = null;
-        this.lastUpdatedAt = null; 
+        this.intervalID     = null;
+        this.lastUpdatedAt  = null; 
     }
 
     // timer action functions
     startTimer() {
         if (this.currentState !== timerState.IDLE && this.currentState !== timerState.FINISHED) return;
 
-        this.currentState = timerState.WORK;
-        this.remainingTime = this.workTime * 60 * 1000;
-        this.targetEndTime = Date.now() + this.remainingTime;
-        this.isPaused = false;
-        this.currentSet = 0;
-        this.lastUpdatedAt = new Date().toISOString();
+        this.currentState   = timerState.WORK;
+        this.remainingTime  = this.workTime * 60 * 1000;
+        this.targetEndTime  = Date.now() + this.remainingTime;
+        this.isPaused       = false;
+        this.currentSet     = 0;
+        this.lastUpdatedAt  = new Date().toISOString();
 
         this.runInterval();
     }
@@ -72,12 +72,12 @@ class PomodoroTimer {
             clearInterval(this.intervalID);
             this.intervalID = null;
         }
-        this.currentState = timerState.IDLE;
-        this.isPaused = false;
-        this.remainingTime = this.workTime * 60 * 1000;
-        this.targetEndTime = null;
-        this.currentSet = 0;
-        this.lastUpdatedAt = null;
+        this.currentState   = timerState.IDLE;
+        this.isPaused       = false;
+        this.remainingTime  = this.workTime * 60 * 1000;
+        this.targetEndTime  = null;
+        this.currentSet     = 0;
+        this.lastUpdatedAt  = null;
     }
 
     // timer execution functions

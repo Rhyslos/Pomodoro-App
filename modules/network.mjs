@@ -37,6 +37,7 @@ export async function makeRequest(url, method = "GET", body = null, responseType
             return await response.text();
         }
         return await response.json();
+        
     } catch (error) {
         if (error.status !== 401) {
             console.error("API Error:", error);

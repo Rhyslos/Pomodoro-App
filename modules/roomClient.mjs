@@ -41,6 +41,7 @@ export function startSSE() {
         showToast(t("Session has ended or you were disconnected."), true);
     };
 }
+
 // room action functions
 export async function createSession() {
     if (!state.currentUser) return;
@@ -48,14 +49,14 @@ export async function createSession() {
     const rawRoomName = document.getElementById('setting-room-name').value || `${state.currentUser.username}${t("'s Room")}`;
     
     const settings = {
-        workTime: parseInt(document.getElementById('setting-work').value),
-        breakTime: parseInt(document.getElementById('setting-break').value),
-        longBreakTime: parseInt(document.getElementById('setting-long').value),
-        targetSets: parseInt(document.getElementById('setting-sets').value),
-        autoStart: document.getElementById('setting-autostart').checked,
-        roomName: sanitizeString(rawRoomName),
-        showCode: document.getElementById('setting-show-code')?.checked || false,
-        debugMode: document.getElementById('setting-debug')?.checked || false
+        workTime:       parseInt(document.getElementById('setting-work').value),
+        breakTime:      parseInt(document.getElementById('setting-break').value),
+        longBreakTime:  parseInt(document.getElementById('setting-long').value),
+        targetSets:     parseInt(document.getElementById('setting-sets').value),
+        autoStart:      document.getElementById('setting-autostart').checked,
+        roomName:       sanitizeString(rawRoomName),
+        showCode:       document.getElementById('setting-show-code')?.checked || false,
+        debugMode:      document.getElementById('setting-debug')?.checked || false
     };
 
     const room = await makeRequest("/api/sessions", "POST", { settings });

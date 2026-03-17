@@ -81,30 +81,23 @@ export async function changeDisplayName() {
     if (!newName || newName.trim() === "") return;
 
     const finalName = sanitizeString(newName.trim());
-    state.currentUser.username = finalName;
     
-    if (state.currentRoomStatus) {
-        if (state.currentRoomStatus.users) {
-            const userIndex = state.currentRoomStatus.users.findIndex(u => u.userId === state.currentUser.userId);
-            if (userIndex !== -1) state.currentRoomStatus.users[userIndex].username = finalName;
-        }
+    // 1. Send the update to the server and await confirmation
+    const updatedUser = await makeRequest("/api/users/me", "PATCH", { username: finalName });
+    
+    if (updatedUser) {
+        // 2. Update the base local auth state
+        state.currentUser.username = updatedUser.username;
         
-        if (state.currentRoomStatus.tasks) {
-            for (let task of state.currentRoomStatus.tasks) {
-                if (task.userId === state.currentUser.userId) {
-                    task.username = finalName;
-                }
-            }
+        // 3. If on the dashboard (no room), update the welcome message manually.
+        // If in a room, do nothing. The server's SSE will automatically redraw the room.
+        if (!state.currentRoomId) {
+            const welcomeMsg = document.getElementById('welcome-msg');
+            if (welcomeMsg) welcomeMsg.innerText = `Welcome, ${state.currentUser.username}`;
         }
-        
-        renderRoom(state.currentRoomStatus);
-    } else if (!state.currentRoomId) {
-        const welcomeMsg = document.getElementById('welcome-msg');
-        if (welcomeMsg) welcomeMsg.innerText = `Welcome, ${state.currentUser.username}`;
     }
     
     toggleSettings();
-    makeRequest("/api/users/me", "PATCH", { username: finalName });
 }
 
 // profile settings functions

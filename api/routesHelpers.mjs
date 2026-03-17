@@ -1,9 +1,22 @@
 import { sessionManager } from '../singletons/sessionManager.mjs';
 import { t, getLang } from '../lang/server_i18n.mjs';
+import { sanitizeString } from '../modules/sanitize.mjs';
 
 // request interceptors
 export function attachLanguage(req, res, next) {
     req.lang = getLang(req.headers['accept-language']);
+    next();
+}
+
+// request interceptors
+export function sanitizeBody(req, res, next) {
+    if (req.body && typeof req.body === 'object') {
+        for (let key in req.body) {
+            if (typeof req.body[key] === 'string') {
+                req.body[key] = sanitizeString(req.body[key]);
+            }
+        }
+    }
     next();
 }
 
@@ -33,4 +46,13 @@ export function setAuthCookie(res, token) {
         sameSite: 'strict',
         maxAge: 86400000
     });
+}
+
+// error handling wrappers
+export function catchAsync(fn) {
+    return (req, res, next) => {
+        Promise.resolve(fn(req, res, next)).catch(error => {
+            res.status(500).json({ error: error.message });
+        });
+    };
 }

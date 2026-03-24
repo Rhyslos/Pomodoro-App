@@ -11,13 +11,26 @@ import { setLanguage, loadClientDictionary } from '/lang/client_i18n.mjs';
 async function initApp() {
     await loadClientDictionary();
     
+    // Offline check
+    if (!navigator.onLine) {
+        const savedRoom = sessionStorage.getItem('pomodoroRoom');
+        if (savedRoom) {
+            state.currentRoomId = savedRoom;
+            await loadView('room');
+        } else {
+            await showDashboardScreen();
+        }
+        toggleOfflineBanner(true);
+        return;
+    }
+
     try {
         const user = await makeRequest('/api/users/me', 'GET');
         
         if (user) {
             state.currentUser = user;
             
-            const savedRoom = sessaionStorage.getItem('PomodoroRoom');
+            const savedRoom = sessionStorage.getItem('pomodoroRoom');
             if (savedRoom) {
                 state.currentRoomId = savedRoom;
                 const loaded = await loadView('room');
@@ -31,7 +44,9 @@ async function initApp() {
             return;
         }
     } catch (error) {
-        state.currentUser = null;
+        if (navigator.onLine) {
+            console.log("Not logged in or session expired.");
+        }
     }
     
     sessionStorage.removeItem('pomodoroRoom');
@@ -41,13 +56,15 @@ async function initApp() {
 // service worker functions
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-                console.log('Service Worker registration successful with scope: ', registration.scope);
-            })
-            .catch((error) => {
-                console.error('Service Worker registration failed: ', error);
-            });
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker registration successful with scope: ', registration.scope);
+                })
+                .catch((error) => {
+                    console.error('Service Worker registration failed: ', error);
+                });
+        });
     } else {
         console.warn('Service workers are not supported in this browser.');
     }
@@ -59,7 +76,11 @@ registerServiceWorker();
 
 // network event functions
 window.addEventListener('offline', () => toggleOfflineBanner(true));
-window.addEventListener('online', () => toggleOfflineBanner(false));
+window.addEventListener('online', () => {
+    toggleOfflineBanner(false);
+    const currentView = document.getElementById('login-screen') ? 'login' : 'app';
+    if (currentView === 'login') initApp(); 
+});
 
 if (!navigator.onLine) {
     toggleOfflineBanner(true);

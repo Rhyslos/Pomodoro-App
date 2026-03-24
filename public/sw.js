@@ -57,8 +57,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
-    if (event.request.url.includes('/api/sessions') && event.request.headers.get('Accept').includes('text/event-stream')) {
-        return; 
+    const acceptHeader = event.request.headers.get('Accept') || '';
+    if (event.request.url.includes('/api/sessions') && acceptHeader.includes('text/event-stream')) {
+        return;
     }
 
     event.respondWith(
@@ -66,7 +67,7 @@ self.addEventListener('fetch', (event) => {
             if (cachedResponse) {
                 return cachedResponse;
             }
-            
+
             return fetch(event.request).then((networkResponse) => {
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
@@ -78,9 +79,13 @@ self.addEventListener('fetch', (event) => {
                         cache.put(event.request, responseToCache);
                     });
                 }
-                
+
                 return networkResponse;
             }).catch(() => {
+                if (event.request.mode === 'navigate') {
+                    return caches.match('/');
+                }
+
                 return new Response("Network error occurred", { status: 408, headers: { 'Content-Type': 'text/plain' } });
             });
         })

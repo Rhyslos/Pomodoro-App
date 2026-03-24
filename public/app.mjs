@@ -16,7 +16,7 @@ async function initApp() {
         try {
             state.currentUser = JSON.parse(cachedUser);
         } catch (e) {
-            console.warn("Failed to parse cached user");
+            state.currentUser = null;
         }
     }
 
@@ -72,10 +72,32 @@ registerServiceWorker();
 
 // network event functions
 window.addEventListener('offline', () => toggleOfflineBanner(true));
-window.addEventListener('online', () => {
+
+window.addEventListener('online', async () => {
     toggleOfflineBanner(false);
-    const currentView = document.getElementById('login-screen') ? 'login' : 'app';
-    if (currentView === 'login') initApp(); 
+
+    if (document.getElementById('login-screen')) {
+        initApp();
+        return;
+    }
+
+    if (state.currentUser) {
+        try {
+            const user = await makeRequest('/api/users/me', 'GET');
+            if (user) {
+                state.currentUser = user;
+                localStorage.setItem('pomodoro_user', JSON.stringify(user));
+
+                if (state.currentRoomId) {
+                    startSSE();
+                }
+            }
+        } catch (error) {
+            if (error.status === 401) {
+                logoutAccount(); 
+            }
+        }
+    }
 });
 
 if (!navigator.onLine) {

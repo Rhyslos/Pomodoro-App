@@ -10,67 +10,59 @@ import { setLanguage, loadClientDictionary } from '/lang/client_i18n.mjs';
 // initialization functions
 async function initApp() {
     await loadClientDictionary();
+    
+    const cachedUser = localStorage.getItem('pomodoro_user');
+    if (cachedUser) {
+        try {
+            state.currentUser = JSON.parse(cachedUser);
+        } catch (e) {
+            console.warn("Failed to parse cached user");
+        }
+    }
 
-    const loadOfflineState = async () => {
+    let isOffline = false;
+    try {
+        const user = await makeRequest('/api/users/me', 'GET');
+        if (user) {
+            state.currentUser = user;
+            localStorage.setItem('pomodoro_user', JSON.stringify(user));
+            toggleOfflineBanner(false);
+        }
+    } catch (error) {
+        if (error.status === 401) {
+            state.currentUser = null;
+            localStorage.removeItem('pomodoro_user');
+            sessionStorage.removeItem('pomodoroRoom');
+            await loadView('login');
+            return;
+        }
+        
+        isOffline = true;
+        toggleOfflineBanner(true);
+    }
+
+    if (state.currentUser) {
         const savedRoom = sessionStorage.getItem('pomodoroRoom');
         if (savedRoom) {
             state.currentRoomId = savedRoom;
-            await loadView('room');
+            const loaded = await loadView('room');
+            if (loaded && !isOffline) {
+                startSSE();
+            }
         } else {
             await showDashboardScreen();
         }
-        toggleOfflineBanner(true);
-    };
-    
-    if (!navigator.onLine) {
-        await loadOfflineState();
-        return;
+    } else {
+        await loadView('login');
     }
-
-    try {
-        const user = await makeRequest('/api/users/me', 'GET');
-        
-        if (user) {
-            state.currentUser = user;
-            
-            const savedRoom = sessionStorage.getItem('pomodoroRoom');
-            if (savedRoom) {
-                state.currentRoomId = savedRoom;
-                const loaded = await loadView('room');
-                if (loaded) {
-                    startSSE();
-                    return; 
-                }
-            }
-            
-            await showDashboardScreen();
-            return;
-        }
-    } catch (error) {
-        if (error.status === 408 || error.name === 'TypeError') {
-            await loadOfflineState();
-            return;
-        }
-    }
-    
-    sessionStorage.removeItem('pomodoroRoom');
-    await loadView('login');
 }
 
 // service worker functions
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration) => {
-                    console.log('Service Worker registration successful with scope: ', registration.scope);
-                })
-                .catch((error) => {
-                    console.error('Service Worker registration failed: ', error);
-                });
+            navigator.serviceWorker.register('/sw.js');
         });
-    } else {
-        console.warn('Service workers are not supported in this browser.');
     }
 }
 

@@ -13,6 +13,7 @@ export async function handleLogin(username, password) {
     
     if (response) {
         state.currentUser = response.user;
+        localStorage.setItem('pomodoro_user', JSON.stringify(response.user));
         await showDashboardScreen();
     }
 }
@@ -27,6 +28,7 @@ export async function handleRegister(username, password, hasConsented) {
     
     if (response) {
         state.currentUser = response.user;
+        localStorage.setItem('pomodoro_user', JSON.stringify(response.user));
         await showDashboardScreen();
     }
 }
@@ -38,6 +40,7 @@ export async function logoutAccount() {
     state.currentUser = null;
     state.currentRoomId = null;
     state.currentRoomStatus = null;
+    localStorage.removeItem('pomodoro_user');
     
     if (state.eventSource) state.eventSource.close();
     toggleSettings();
@@ -64,6 +67,7 @@ export async function confirmDeleteAccount() {
     state.currentUser = null;
     state.currentRoomId = null;
     state.currentRoomStatus = null;
+    localStorage.removeItem('pomodoro_user');
     
     closeDeleteModal();
 
@@ -83,6 +87,7 @@ export async function changeDisplayName() {
     
     if (updatedUser) {
         state.currentUser.username = updatedUser.username;
+        localStorage.setItem('pomodoro_user', JSON.stringify(state.currentUser));
         
         if (!state.currentRoomId) {
             const welcomeMsg = document.getElementById('welcome-msg');
@@ -117,5 +122,6 @@ export async function changeDisplayColor(eventOrValue) {
     
     if (updatedUser) {
         state.currentUser.color = updatedUser.color;
+        localStorage.setItem('pomodoro_user', JSON.stringify(state.currentUser));
     }
 }

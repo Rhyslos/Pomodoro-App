@@ -1,0 +1,22 @@
+{
+    "name": "Pomodoro Sync",
+    "short_name": "Pomodoro",
+    "description": "Real-time collaborative Pomodoro timer",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#FAF3E0",
+    "theme_color": "#4A7C65",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

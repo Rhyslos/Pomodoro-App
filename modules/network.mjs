@@ -39,11 +39,11 @@ export async function makeRequest(url, method = "GET", body = null, responseType
         return await response.json();
         
     } catch (error) {
-        if (error.status !== 401) {
+        if (error.status !== 401 && error.status !== 408) {
             console.error("API Error:", error);
         }
         
-        if (error.name === 'TypeError') {
+        if (error.name === 'TypeError' || error.status === 408) {
             showToast(t("Network connection lost. Please check your internet."), true);
         } else if (error.status !== 401) {
             showToast(`${t("Error:")} ${error.message}`, true);

@@ -10,9 +10,8 @@ import { setLanguage, loadClientDictionary } from '/lang/client_i18n.mjs';
 // initialization functions
 async function initApp() {
     await loadClientDictionary();
-    
-    // Offline check
-    if (!navigator.onLine) {
+
+    const loadOfflineState = async () => {
         const savedRoom = sessionStorage.getItem('pomodoroRoom');
         if (savedRoom) {
             state.currentRoomId = savedRoom;
@@ -21,6 +20,10 @@ async function initApp() {
             await showDashboardScreen();
         }
         toggleOfflineBanner(true);
+    };
+    
+    if (!navigator.onLine) {
+        await loadOfflineState();
         return;
     }
 
@@ -44,8 +47,9 @@ async function initApp() {
             return;
         }
     } catch (error) {
-        if (navigator.onLine) {
-            console.log("Not logged in or session expired.");
+        if (error.status === 408 || error.name === 'TypeError') {
+            await loadOfflineState();
+            return;
         }
     }
     

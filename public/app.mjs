@@ -1,35 +1,23 @@
 // module imports
 import './modules/userWidget.mjs';
-import { makeRequest } from './network.mjs';
-import { state } from './state.mjs';
-import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy, toggleOfflineBanner } from './ui.mjs';
-import { startSSE, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './roomClient.mjs';
-import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './auth.mjs';
+import { makeRequest } from './modules/network.mjs';
+import { state } from './modules/state.mjs';
+import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy, toggleOfflineBanner } from './modules/ui.mjs';
+import { startSSE, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
+import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
 import { setLanguage, loadClientDictionary } from '/lang/client_i18n.mjs';
 
 // initialization functions
 async function initApp() {
     await loadClientDictionary();
     
-    if (!navigator.onLine) {
-        const savedRoom = sessionStorage.getItem('pomodoroRoom');
-        if (savedRoom) {
-            state.currentRoomId = savedRoom;
-            await loadView('room');
-        } else {
-            await showDashboardScreen();
-        }
-        toggleOfflineBanner(true);
-        return;
-    }
-
     try {
         const user = await makeRequest('/api/users/me', 'GET');
         
         if (user) {
             state.currentUser = user;
             
-            const savedRoom = sessionStorage.getItem('pomodoroRoom');
+            const savedRoom = sessaionStorage.getItem('pomodoroRoom');
             if (savedRoom) {
                 state.currentRoomId = savedRoom;
                 const loaded = await loadView('room');
@@ -43,20 +31,25 @@ async function initApp() {
             return;
         }
     } catch (error) {
-        if (navigator.onLine) {
-            console.log("Not logged in or session expired.");
-            sessionStorage.removeItem('pomodoroRoom');
-            await loadView('login');
-        }
+        state.currentUser = null;
     }
+    
+    sessionStorage.removeItem('pomodoroRoom');
+    await loadView('login');
 }
 
 // service worker functions
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js');
-        });
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('Service Worker registration successful with scope: ', registration.scope);
+            })
+            .catch((error) => {
+                console.error('Service Worker registration failed: ', error);
+            });
+    } else {
+        console.warn('Service workers are not supported in this browser.');
     }
 }
 
@@ -66,12 +59,11 @@ registerServiceWorker();
 
 // network event functions
 window.addEventListener('offline', () => toggleOfflineBanner(true));
-window.addEventListener('online', () => {
-    toggleOfflineBanner(false);
-    // Optional: Re-verify session when coming back online
-    const currentView = document.querySelector('#login-screen') ? 'login' : 'app';
-    if (currentView === 'login') initApp(); 
-});
+window.addEventListener('online', () => toggleOfflineBanner(false));
+
+if (!navigator.onLine) {
+    toggleOfflineBanner(true);
+}
 
 // language bindings
 window.changeLanguage = setLanguage;

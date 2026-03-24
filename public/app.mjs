@@ -31,15 +31,27 @@ async function initApp() {
             return;
         }
     } catch (error) {
-        console.log("Not logged in or session expired.");
+        state.currentUser = null;
     }
     
     sessionStorage.removeItem('pomodoroRoom');
     await loadView('login');
 }
 
-initApp();
+// service worker functions
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
+        });
+    }
+}
 
+// execution functions
+initApp();
+registerServiceWorker();
+
+// network event functions
 window.addEventListener('offline', () => toggleOfflineBanner(true));
 window.addEventListener('online', () => toggleOfflineBanner(false));
 

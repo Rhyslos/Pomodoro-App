@@ -1,5 +1,8 @@
 import { t, getBrowserLang } from '/lang/client_i18n.mjs';
-import { showToast } from './ui.mjs';
+import { showToast, toggleOfflineBanner } from './ui.mjs';
+import { state } from './state.mjs';
+import { startSSE } from './roomClient.mjs';
+import { logoutAccount } from './auth.mjs';
 
 // network functions
 export async function makeRequest(url, method = "GET", body = null, responseType = "json") {
@@ -49,5 +52,41 @@ export async function makeRequest(url, method = "GET", body = null, responseType
         }
         
         throw error;
+    }
+}
+
+// network event functions
+export function initNetworkListeners(initAppCallback) {
+    window.addEventListener('offline', () => toggleOfflineBanner(true));
+
+    window.addEventListener('online', async () => {
+        toggleOfflineBanner(false);
+
+        if (document.getElementById('login-screen')) {
+            if (initAppCallback) initAppCallback();
+            return;
+        }
+
+        if (state.currentUser) {
+            try {
+                const user = await makeRequest('/api/users/me', 'GET');
+                if (user) {
+                    state.currentUser = user;
+                    localStorage.setItem('pomodoro_user', JSON.stringify(user));
+
+                    if (state.currentRoomId) {
+                        startSSE();
+                    }
+                }
+            } catch (error) {
+                if (error.status === 401) {
+                    logoutAccount(); 
+                }
+            }
+        }
+    });
+
+    if (!navigator.onLine) {
+        toggleOfflineBanner(true);
     }
 }

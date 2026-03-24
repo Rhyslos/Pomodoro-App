@@ -1,6 +1,6 @@
 // module imports
 import './modules/userWidget.mjs';
-import { makeRequest } from './modules/network.mjs';
+import { makeRequest, initNetworkListeners } from './modules/network.mjs';
 import { state } from './modules/state.mjs';
 import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy, toggleOfflineBanner } from './modules/ui.mjs';
 import { startSSE, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
@@ -69,40 +69,7 @@ function registerServiceWorker() {
 // execution functions
 initApp();
 registerServiceWorker();
-
-// network event functions
-window.addEventListener('offline', () => toggleOfflineBanner(true));
-
-window.addEventListener('online', async () => {
-    toggleOfflineBanner(false);
-
-    if (document.getElementById('login-screen')) {
-        initApp();
-        return;
-    }
-
-    if (state.currentUser) {
-        try {
-            const user = await makeRequest('/api/users/me', 'GET');
-            if (user) {
-                state.currentUser = user;
-                localStorage.setItem('pomodoro_user', JSON.stringify(user));
-
-                if (state.currentRoomId) {
-                    startSSE();
-                }
-            }
-        } catch (error) {
-            if (error.status === 401) {
-                logoutAccount(); 
-            }
-        }
-    }
-});
-
-if (!navigator.onLine) {
-    toggleOfflineBanner(true);
-}
+initNetworkListeners(initApp);
 
 // language bindings
 window.changeLanguage = setLanguage;

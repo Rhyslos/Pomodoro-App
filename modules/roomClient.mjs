@@ -4,6 +4,13 @@ import { loadView, showDashboardScreen, renderRoom, closeCreateRoomModal, closeT
 import { t } from '/lang/client_i18n.mjs';
 import { sanitizeString } from './sanitize.mjs';
 
+// Global reconnect listener for when the internet comes back
+window.addEventListener('online', () => {
+    if (state.currentRoomId) {
+        startSSE();
+    }
+});
+
 // connection functions
 export function startSSE() {
     if (state.eventSource) {
@@ -40,7 +47,31 @@ export function startSSE() {
     state.eventSource.onerror = async () => {
         if (isUnloading) return; 
 
+        // Close the broken connection
         state.eventSource.close();
+
+        // 1. If the browser knows we are offline, do nothing. 
+        // The offline banner is showing, and the 'online' event listener above will handle reconnecting.
+        if (!navigator.onLine) return;
+
+        // 2. We are online, but the connection dropped. Let's verify if the room still exists.
+        try {
+            // A quick check to see if the session is still active on the server
+            const checkRequest = await fetch(`/api/sessions/${state.currentRoomId}`);
+            if (checkRequest.ok) {
+                // It was just a network blip. Attempt to reconnect automatically.
+                setTimeout(() => {
+                    if (state.currentRoomId) startSSE();
+                }, 2500);
+                return;
+            }
+        } catch (error) {
+            // If fetch fails, we might be having broader network issues. 
+            // Let the 'online' event handle it later.
+            return;
+        }
+
+        // 3. If we get here, the room was intentionally ended by the host or the server restarted.
         state.currentRoomId = null;
         state.currentRoomStatus = null;
         sessionStorage.removeItem('pomodoroRoom');

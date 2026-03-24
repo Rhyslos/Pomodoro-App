@@ -324,6 +324,35 @@ export function translatePage() {
 }
 
 // notification functions
+let offlineBanner = null;
+
+export function toggleOfflineBanner(isOffline) {
+    if (!offlineBanner) {
+        offlineBanner = document.createElement('div');
+        offlineBanner.id = 'offline-banner';
+        document.body.appendChild(offlineBanner);
+    }
+
+    const appContainer = document.getElementById('app-container');
+
+    if (isOffline) {
+        offlineBanner.innerText = t("You are currently offline. The application requires an internet connection to function.");
+        offlineBanner.classList.add('visible');
+        if (appContainer) {
+            appContainer.style.pointerEvents = 'none';
+            appContainer.style.opacity = '0.5';
+        }
+    } else {
+        offlineBanner.classList.remove('visible');
+        if (appContainer) {
+            appContainer.style.pointerEvents = 'auto';
+            appContainer.style.opacity = '1';
+        }
+        showToast(t("You are back online!"));
+    }
+}
+
+// notification functions
 export function showToast(message, isError = false) {
     const toast = document.createElement('div');
     toast.innerText = message;

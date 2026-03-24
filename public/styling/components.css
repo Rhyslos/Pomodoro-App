@@ -255,3 +255,25 @@ user-widget {
 user-widget[mode="profile"] {
     display: contents; 
 }
+
+/* notification styling */
+#offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--accent-stop);
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+    transform: translateY(-100%);
+}
+
+#offline-banner.visible {
+    transform: translateY(0);
+}

@@ -17,7 +17,7 @@ async function initApp() {
         if (user) {
             state.currentUser = user;
             
-            const savedRoom = sessaionStorage.getItem('pomodoroRoom');
+            const savedRoom = sessaionStorage.getItem('PomodoroRoom');
             if (savedRoom) {
                 state.currentRoomId = savedRoom;
                 const loaded = await loadView('room');

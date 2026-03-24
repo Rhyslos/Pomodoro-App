@@ -325,6 +325,7 @@ export function translatePage() {
 
 // notification functions
 let offlineBanner = null;
+let isCurrentlyOffline = false;
 
 export function toggleOfflineBanner(isOffline) {
     if (!offlineBanner) {
@@ -336,6 +337,9 @@ export function toggleOfflineBanner(isOffline) {
     const appContainer = document.getElementById('app-container');
 
     if (isOffline) {
+        if (isCurrentlyOffline) return; 
+        isCurrentlyOffline = true;
+
         offlineBanner.innerText = t("You are currently offline. The application requires an internet connection to function.");
         offlineBanner.classList.add('visible');
         if (appContainer) {
@@ -343,6 +347,9 @@ export function toggleOfflineBanner(isOffline) {
             appContainer.style.opacity = '0.5';
         }
     } else {
+        if (!isCurrentlyOffline) return; 
+        isCurrentlyOffline = false;
+
         offlineBanner.classList.remove('visible');
         if (appContainer) {
             appContainer.style.pointerEvents = 'auto';

@@ -11,6 +11,13 @@
     <script type="module" src="app.mjs" defer></script>
 </head>
 <body>
+    <script>
+        // styling functions
+        if (localStorage.getItem('pomodoro_theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    </script>
+
     <header>
         <div class="settings-container">
             <button onclick="toggleSettings()" class="icon-btn" aria-label="Menu">&#9776;</button>

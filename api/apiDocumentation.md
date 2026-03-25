@@ -12,6 +12,21 @@ This API manages user authentication, collaborative Pomodoro timer rooms via Ser
 
 ---
 
+### System / View Endpoints
+
+#### Get HTML View
+Fetches the raw HTML template for a specific view to be injected into the client's DOM.
+
+- **Endpoint:** `GET /views/:viewName`
+
+**Response (200 OK):** *(Returns raw HTML text)*
+
+**Response (400 Bad Request):**
+    
+    "Invalid view name"
+
+---
+
 ### User Endpoints
 
 #### Register User
@@ -38,6 +53,10 @@ Creates a new user account and sets the authentication cookie.
       }
     }
 
+**Error Responses:**
+- `400 Bad Request`: `{ "error": "Missing fields" }`
+- `409 Conflict`: `{ "error": "Username taken" }`
+
 #### Login User
 Authenticates an existing user and sets the authentication cookie.
 
@@ -52,6 +71,9 @@ Authenticates an existing user and sets the authentication cookie.
     }
 
 **Response (200 OK):** *(Same as Register response)*
+
+**Error Responses:**
+- `401 Unauthorized`: `{ "error": "Invalid credentials" }`
 
 #### Logout User
 Invalidates the current session and clears the authentication cookie.
@@ -72,7 +94,8 @@ Retrieves the profile of the currently authenticated user.
 **Response (200 OK):** *(Returns User Object)*
 
 #### Update Current User
-Updates profile settings (e.g., username, display color). Changes are automatically broadcasted to any active rooms the user is in.
+Updates profile settings (e.g., username, display color). 
+*Note: Changes are instantly synchronized and broadcasted across all active rooms the user is participating in, without requiring them to rejoin.*
 
 - **Endpoint:** `PATCH /users/me`
 - **Content-Type:** `application/json`
@@ -85,6 +108,9 @@ Updates profile settings (e.g., username, display color). Changes are automatica
     }
 
 **Response (200 OK):** *(Returns Updated User Object)*
+
+**Error Responses:**
+- `404 Not Found`: `{ "error": "User not found" }`
 
 #### Delete Current User
 Permanently deletes the user account and clears the authentication cookie.
@@ -100,6 +126,8 @@ Permanently deletes the user account and clears the authentication cookie.
 ---
 
 ### Session (Room) Endpoints
+
+*Note: All endpoints requiring `:roomId` will return a `404 Not Found: { "error": "Room not found" }` if the session does not exist.*
 
 #### Create a Session
 Scaffolds a new Pomodoro room, assigns the creator as the host, and initializes the state.
@@ -165,6 +193,9 @@ Retrieves the current state of a room. User must be a member of the room to view
       }
     }
 
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Unauthorized" }` *(If user is not a member of the room)*
+
 #### Real-Time Event Stream (SSE)
 Establishes a persistent Server-Sent Events connection. The server broadcasts updates automatically whenever the room state changes.
 
@@ -177,6 +208,9 @@ Adds the user to the room's participant list (if the room is not locked or full)
 - **Endpoint:** `POST /sessions/:roomId/join`
 
 **Response (200 OK):** *(Returns complete Room Status object)*
+
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Room is locked or full" }`
 
 #### Leave a Session
 Removes the user from the room and severs their SSE connection.
@@ -199,6 +233,9 @@ Forcefully disconnects all participants and deletes the room from active memory.
     {
       "message": "Session ended"
     }
+
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Unauthorized" }` *(If user is not the host)*
 
 ---
 
@@ -230,6 +267,9 @@ Manipulates the timer state or updates the room settings.
 
 **Response (200 OK):** *(Returns complete Room Status object)*
 
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Unauthorized" }` *(If user is not the host)*
+
 #### Create a Task
 Adds a new shared task to the room's task board.
 
@@ -256,6 +296,10 @@ Marks a specific task as completed. Can only be triggered by the user who create
       "message": "Task completed"
     }
 
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Unauthorized" }` *(If user did not create the task)*
+- `404 Not Found`: `{ "error": "Task not found" }`
+
 ---
 
 ### Admin & Debug Endpoints
@@ -270,6 +314,9 @@ Prevents or allows new users from joining the session via the room code.
     {
       "message": "Lock toggled"
     }
+
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Unauthorized" }` *(If user is not the host)*
 
 #### Execute Admin Action (Host Only)
 Manage participants in the room.
@@ -292,6 +339,9 @@ Manage participants in the room.
       "message": "Admin action executed"
     }
 
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Unauthorized" }` *(If user is not the host)*
+
 #### Inject Fake User (Debug Mode Only)
 Generates a bot user and forces it to join the room for UI testing purposes. Requires `debugMode` to be true in room settings.
 
@@ -302,3 +352,6 @@ Generates a bot user and forces it to join the room for UI testing purposes. Req
     {
       "message": "Fake user injected"
     }
+
+**Error Responses:**
+- `403 Forbidden`: `{ "error": "Debug mode is disabled" }`

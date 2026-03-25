@@ -2,7 +2,7 @@
 import './modules/userWidget.mjs';
 import { makeRequest, initNetworkListeners } from './modules/network.mjs';
 import { state } from './modules/state.mjs';
-import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy, toggleOfflineBanner } from './modules/ui.mjs';
+import { loadView, showDashboardScreen, toggleSettings, triggerColorPicker, openCreateRoomModal, closeCreateRoomModal, openTaskModal, closeTaskModal, closeAdminModal, closeDeleteModal, toggleTheme, loadPolicy, toggleOfflineBanner, initializeTheme } from './modules/ui.mjs';
 import { startSSE, createSession, joinRoom, leaveSession, endSession, sendTimerAction, copyRoomCode, createTask, completeTask, handleUserClick, adminAction, toggleRoomLock, addFakeUser, goHome } from './modules/roomClient.mjs';
 import { handleLogin, handleRegister, logoutAccount, deleteAccount, confirmDeleteAccount, changeDisplayName, changePassword, changeDisplayColor } from './modules/auth.mjs';
 import { setLanguage, loadClientDictionary } from '/lang/client_i18n.mjs';
@@ -70,6 +70,7 @@ function registerServiceWorker() {
 initApp();
 registerServiceWorker();
 initNetworkListeners(initApp);
+initializeTheme();
 
 // language bindings
 window.changeLanguage = setLanguage;

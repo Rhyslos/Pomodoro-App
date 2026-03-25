@@ -240,6 +240,16 @@ export function toggleSettings() {
         menu.classList.toggle('hidden');
     }
 }
+// styling functions
+export function initializeTheme() {
+    const savedTheme = localStorage.getItem('pomodoro_theme');
+    
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+    }
+}
 
 // styling functions
 export function toggleTheme() {

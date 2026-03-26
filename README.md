@@ -11,7 +11,7 @@ A real-time, multiplayer Pomodoro timer application designed for study groups, r
 * **Account Control:** Users can change passwords or securely delete their accounts and associated data.
 
 ### Real-Time Multiplayer Rooms
-* **Room Creation & Joining:** Users can create custom rooms or join existing ones using a unique 6-character alphanumeric room code (e.g., `AB-CDE`).
+* **Room Creation & Joining:** Users can create custom rooms or join existing ones using a unique 6-character alphanumeric room code (e.g., `ABC-DEF`).
 * **Live Synchronization:** Utilizes Server-Sent Events (SSE) to broadcast state changes (timer updates, user joins/leaves, task updates) to all connected clients instantly with low overhead.
 * **Capacity Limit:** Rooms support up to 16 simultaneous participants to maintain focused environments.
 
